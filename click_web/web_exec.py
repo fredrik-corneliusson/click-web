@@ -10,7 +10,7 @@ import subprocess
 
 def exec(command_path):
     '''
-    Execute the command, will execute the script via Popen in order to
+    Execute the command, will execute the script via Popen
     :param command_path:
     :return:
     '''

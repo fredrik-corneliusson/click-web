@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>{{ tree.name }}</title>
+</head>
+<body>
+<h1>{{ tree.name }} &ndash; {{ tree.help }}</h1>
+
+<ul>
+    <ul>
+        {%- for command in tree.childs recursive %}
+            <li><a href="{{ command.path }}">{{ command.name }}</a> &ndash; {{ command.help }}
+                {%- if command.childs -%}
+                    <ul class="submenu">{{ loop(command.childs) }}</ul>
+                {%- endif %}</li>
+        {%- endfor %}
+    </ul>
+
+</ul>
+
+</body>
+</html>

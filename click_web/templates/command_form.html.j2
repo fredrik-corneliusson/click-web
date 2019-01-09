@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>{{ command.name }}</title>
+</head>
+<body>
+<h1>{{ command.name }}</h1>
+<form action="/exec/{{ command_path }}" method="post">
+    {% for field in fields %}
+        {{ field['human_readable_name'] }}
+        <input type="{{ field['type'] }}"
+           name="{{ field['name'] }}"
+           value="{{ field['value'] }}"
+           {{ field['checked'] }}>
+        <br>
+    {% endfor %}
+    <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>

@@ -35,6 +35,8 @@ def render_command_form(ctx, command, command_path):
 
 
 def _get_input_field(param):
+    # TODO: support options and arguments that can be used more than once
+    #       File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
     field = {}
     if param.param_type_name == 'option':
         if param.is_bool_flag:

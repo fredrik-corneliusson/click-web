@@ -1,4 +1,3 @@
-# import app routes for exec
 from pathlib import Path
 
 import click

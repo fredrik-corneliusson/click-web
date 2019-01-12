@@ -44,6 +44,6 @@ In Bash:
 ```
 $ export FLASK_ENV=development
 $ export FLASK_APP=app.py
-$ flask.exe run
+$ flask run
 ```
  

@@ -2,7 +2,9 @@ from typing import Tuple
 
 import click
 import click_web
-from werkzeug.exceptions import abort
+
+from click_web.exceptions import CommandNotFound
+
 
 def get_command_by_path(command_path: str) -> Tuple[click.Context, click.Command]:
     command_path_items = command_path.split('/')
@@ -17,5 +19,5 @@ def get_command_by_path(command_path: str) -> Tuple[click.Context, click.Command
                 ctx = click.Context(command, info_name=command, parent=ctx)
                 parent_command = command
             else:
-                return abort(404, 'command not found. Must be one of {}'.format(parent_command.list_commands(ctx)))
+                raise CommandNotFound('command not found. Must be one of {}'.format(parent_command.list_commands(ctx)))
         return ctx, command

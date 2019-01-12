@@ -15,5 +15,15 @@ def some_command(an_argument, an_option):
     click.echo(f"Run command argument: {an_argument} option {an_option}")
 
 
+@cli.group()
+def sub_group():
+    'a sub group'
+    pass
+
+@sub_group.command()
+def a_sub_group_command():
+    'Help for sub_group.sub_group_command '
+    click.echo(f"Run a_sub_group_command")
+
 if __name__ == '__main__':
     cli()

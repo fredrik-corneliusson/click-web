@@ -2,11 +2,17 @@ from typing import Tuple
 
 import click
 import click_web
+from click_web import exceptions
 
 from click_web.exceptions import CommandNotFound
 
 
 def get_command_by_path(command_path: str) -> Tuple[click.Context, click.Command]:
+    """
+    Take a (slash separated) string and get the Click command object.
+    :param command_path: "some_group/a_command"
+    :return: Click command instance for last part of path (a_command)
+    """
     command_path_items = command_path.split('/')
     command = click_web.click_root_cmd
     with click.Context(command, info_name=command, parent=None) as ctx:
@@ -22,3 +28,30 @@ def get_command_by_path(command_path: str) -> Tuple[click.Context, click.Command
                 raise CommandNotFound('Failed to find command for path "{}". Command "{}" not found. Must be one of {}'
                                       .format(command_path, command_name, parent_command.list_commands(ctx)))
         return ctx, command
+
+
+def get_input_field(param: click.Parameter) -> dict:
+    """
+    Convert a click.Parameter into a dict structure describing a html form option
+    """
+    # TODO: File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
+    field = {}
+    if param.param_type_name == 'option':
+        if param.is_bool_flag:
+            field['type'] = 'checkbox'
+        else:
+            field['type'] = 'text'
+        field['value'] = param.default if param.default else ''
+        field['checked'] = 'checked="checked"' if param.default else ''
+        field['desc'] = param.help
+        field['name'] = '--{}'.format(param.name)
+    elif param.param_type_name == 'argument':
+        field['type'] = 'text'
+        field['value'] = ''
+        field['name'] = param.name
+        field['checked'] = ''
+    if param.nargs < 0:
+        raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
+    field['nargs'] = param.nargs
+    field['human_readable_name'] = param.human_readable_name
+    return field

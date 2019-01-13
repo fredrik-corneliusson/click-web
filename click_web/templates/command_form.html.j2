@@ -8,11 +8,13 @@
 <form action="/exec/{{ command_path }}" method="post">
     {% for field in fields %}
         {{ field['human_readable_name'] }}
-        <input type="{{ field['type'] }}"
-           name="{{ field['name'] }}"
-           value="{{ field['value'] }}"
-           {{ field['checked'] }}>
-        <br>
+        {% for arg in range(field['nargs']) %}
+            <input type="{{ field['type'] }}"
+                   name="{{ field['name'] }}"
+                   value="{{ field['value'] }}"
+                    {{ field['checked'] }}>
+            <br>
+        {% endfor %}
     {% endfor %}
     <input type="submit" value="Submit">
 </form>

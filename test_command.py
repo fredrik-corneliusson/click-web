@@ -33,10 +33,10 @@ def sub():
 
 @sub.command()
 @click.option("--debug/--no-debug", help='set debug flag')
-@click.option("--email", help='the email for user')
+@click.option("--email", help='the email for user', default='some@thing.xyz', nargs=2)
 @click.argument("user", default="bode")
 def commando_2(user, debug, email):
-    'subkommando'
+    'subkommando med nargs'
     click.echo("hejsan {} du har satt debug till {} och din email: {}".format(user, debug, email))
 
 @cli.group()

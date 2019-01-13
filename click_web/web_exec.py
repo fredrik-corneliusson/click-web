@@ -51,8 +51,8 @@ def _request_to_command_args() -> List[str]:
             vals = request.form.getlist(key)
             if vals:
                 # opt with value, if option was given multiple times get the values for each.
+                args.append(key)
                 for val in vals:
-                    args.append(key)
                     if val:
                         args.append(val)
             else:

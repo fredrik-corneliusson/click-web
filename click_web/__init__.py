@@ -10,7 +10,7 @@ script_file = None
 'The click root command to serve'
 click_root_cmd = None
 
-
+#TODO: how to register multiple click root commands?
 def register(module, command: click.BaseCommand):
     '''
 
@@ -19,11 +19,12 @@ def register(module, command: click.BaseCommand):
                     in order to generate the index page and the html forms
     usage:
 
-        import click_web
-        from click_web import app
-        import a_command
+        from click_web import flask_app, register
 
-        click_web.register(a_command, a_command.cli)
+        import a_click_script
+
+        click_web.register(a_click_script,
+                           a_click_script.a_group_or_command)
 
     '''
     global click_root_cmd, script_file

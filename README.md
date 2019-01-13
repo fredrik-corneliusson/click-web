@@ -42,8 +42,8 @@ register(test_command, test_command.cli)
 ### Running example app:
 In Bash:
 ```
-$ export FLASK_ENV=development
-$ export FLASK_APP=app.py
-$ flask run
+export FLASK_ENV=development
+export FLASK_APP=app.py
+flask run
 ```
  

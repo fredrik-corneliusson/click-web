@@ -46,12 +46,6 @@
     margin: 20px;
 }
 
-.str {
-    color: red;
-    font-size: 20pt;
-}
-
 input[type=number] {
     color: rosybrown;
-    font-size: 20pt;
 }

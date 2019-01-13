@@ -1,9 +1,11 @@
 from pathlib import Path
 
 import click
-import click_web.web
-import click_web.web_exec
+import click_web.resources.index
+import click_web.resources.exec_command
 from flask import Flask
+
+import click_web.resources.command
 
 'The full path to the click script file to execute.'
 script_file = None
@@ -33,6 +35,6 @@ def register(module, command: click.BaseCommand):
 
 
 flask_app = Flask(__name__)
-flask_app.add_url_rule('/', 'index', click_web.web.index)
-flask_app.add_url_rule('/<path:command_path>', 'command', click_web.web.get_form_for)
-flask_app.add_url_rule('/exec/<path:command_path>', 'command_execute', click_web.web_exec.exec, methods=['POST'])
+flask_app.add_url_rule('/', 'index', click_web.resources.index.index)
+flask_app.add_url_rule('/<path:command_path>', 'command', click_web.resources.command.get_form_for)
+flask_app.add_url_rule('/exec/<path:command_path>', 'command_execute', click_web.resources.exec_command.exec, methods=['POST'])

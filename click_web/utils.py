@@ -1,5 +1,4 @@
 from typing import Tuple
-import numbers
 
 import click
 import click_web
@@ -59,6 +58,7 @@ def get_input_field(ctx: click.Context, param: click.Parameter) -> dict:
     field['nargs'] = param.nargs
     field['human_readable_name'] = param.human_readable_name
     return field
+
 
 def _param_type_to_input_type(param):
     return 'number' if param.type == click.INT else 'text'

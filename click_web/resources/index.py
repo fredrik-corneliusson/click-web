@@ -30,7 +30,7 @@ def _click_to_tree(node: click.BaseCommand, parents=[]):
     res['name'] = node.name
     res['help'] = node.get_short_help_str()
     path_parts = parents + [node]
-    res['path'] = '/' + '/'.join(p.name for p in path_parts[1:])
+    res['path'] = '/' + '/'.join(p.name for p in path_parts)
     if res_childs:
         res['childs'] = res_childs
     return res

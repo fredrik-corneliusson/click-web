@@ -14,7 +14,7 @@ def exec(command_path):
     :param command_path:
     :return:
     '''
-    commands = command_path.split('/')
+    root_command, *commands = command_path.split('/')
     command_args = _request_to_command_args()
 
     cmd = [sys.executable,  # run with same python executable we are running with.

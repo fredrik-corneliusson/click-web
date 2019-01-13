@@ -18,9 +18,9 @@ def test_register(cli, loaded_script_module):
 @pytest.mark.parametrize(
     'command_path, command_name, command_help',
     [
-        ('some-command', 'some-command', 'Help text'),
-        ('sub-group', 'sub-group', 'a sub group'),
-        ('sub-group/a-sub-group-command', 'a-sub-group-command', 'Help for sub_group.sub_group_command '),
+        ('cli/some-command', 'some-command', 'Help text'),
+        ('cli/sub-group', 'sub-group', 'a sub group'),
+        ('cli/sub-group/a-sub-group-command', 'a-sub-group-command', 'Help for sub_group.sub_group_command '),
     ])
 def test_command_path(cli,
                       loaded_script_module,
@@ -28,7 +28,7 @@ def test_command_path(cli,
                       command_name,
                       command_help):
     click_web.register(loaded_script_module, cli)
-    ctx, command = click_web.utils.get_command_by_path(command_path)
+    ctx, command = click_web.utils.get_commands_by_path(command_path)[-1]
 
     assert command.name == command_name
     assert command.help == command_help

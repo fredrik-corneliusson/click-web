@@ -2,10 +2,7 @@ from collections import OrderedDict
 
 import click
 
-from flask import Flask
 import click_web
-
-app = Flask(__name__)
 
 from flask import render_template
 

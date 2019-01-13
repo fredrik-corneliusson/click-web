@@ -45,7 +45,7 @@ def exec(command_path):
 
 def _request_to_command_args(command_index) -> List[str]:
     """
-    Convert the post request into a list of command line arguments to be passed to click.invoke
+    Convert the post request into a list of command line arguments
     
     :param command_index: (int) the index for the command to get arguments for.
     :return: list of command line arguments for command at that cmd_index

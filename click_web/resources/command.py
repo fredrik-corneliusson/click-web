@@ -3,9 +3,9 @@ from typing import List, Tuple
 import click
 from flask import render_template, abort
 
+import click_web
 from click_web import exceptions
 from click_web.exceptions import CommandNotFound
-from click_web.utils import get_commands_by_path
 
 form_command_index_separator = '.'
 
@@ -13,7 +13,7 @@ form_command_index_separator = '.'
 def get_form_for(command_path: str):
     # skip the first path part as it's the roots name (cli)
     try:
-        ctx_and_commands = get_commands_by_path(command_path)
+        ctx_and_commands = _get_commands_by_path(command_path)
     except CommandNotFound as err:
         return abort(404, str(err))
 
@@ -22,6 +22,36 @@ def get_form_for(command_path: str):
                            levels=levels,
                            command=levels[-1]['command'],
                            command_path=command_path)
+
+
+def _get_commands_by_path(command_path: str) -> Tuple[click.Context, click.Command]:
+    """
+    Take a (slash separated) string and generate (context, command) for each level.
+    :param command_path: "some_group/a_command"
+    :return: Return a list from root to leaf comand. each element is (Click.Context, Click.Command)
+    """
+    command_path_items = command_path.split('/')
+    command_name, *command_path_items = command_path_items
+    command = click_web.click_root_cmd
+    if command.name != command_name:
+        raise CommandNotFound('Failed to find root command {}. There is a root commande named:{}'
+                              .format(command_name, command.name))
+    result = []
+    with click.Context(command, info_name=command, parent=None) as ctx:
+        result.append((ctx, command))
+        # dig down the path parts to find the leaf command
+        parent_command = command
+        for command_name in command_path_items:
+            command = parent_command.get_command(ctx, command_name)
+            if command:
+                # create sub context for command
+                ctx = click.Context(command, info_name=command, parent=ctx)
+                parent_command = command
+            else:
+                raise CommandNotFound('Failed to find command for path "{}". Command "{}" not found. Must be one of {}'
+                                      .format(command_path, command_name, parent_command.list_commands(ctx)))
+            result.append((ctx, command))
+    return result
 
 
 def _generate_form_data(ctx_and_commands: List[Tuple[click.Context, click.Command]]):

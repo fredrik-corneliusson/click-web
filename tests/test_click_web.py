@@ -6,7 +6,6 @@ import pytest
 
 import click_web
 import click_web.resources.command
-import click_web.utils
 from click_web.resources.command import _generate_form_data
 
 
@@ -20,7 +19,7 @@ def test_register(cli, loaded_script_module):
 def test_render_command_form(cli, loaded_script_module):
     cmd_path = 'cli/some-command'
     click_web.register(loaded_script_module, cli)
-    ctx_and_commands = click_web.utils.get_commands_by_path(cmd_path)
+    ctx_and_commands = click_web.resources.command._get_commands_by_path(cmd_path)
     res = _generate_form_data(ctx_and_commands)
     assert len(res) == 2
     assert len(res[0]['fields']) == 1
@@ -41,7 +40,7 @@ def test_command_path(cli,
                       command_name,
                       command_help):
     click_web.register(loaded_script_module, cli)
-    ctx, command = click_web.utils.get_commands_by_path(command_path)[-1]
+    ctx, command = click_web.resources.command._get_commands_by_path(command_path)[-1]
 
     assert command.name == command_name
     assert command.help == command_help

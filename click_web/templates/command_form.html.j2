@@ -1,20 +1,25 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>{{ command.name }}</title>
+    <title>{{ command.name|title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
 </head>
 <body>
-<h1>{{ command.name }}</h1>
-<form action="/exec/{{ command_path }}" method="post">
+<h1>{{ command.name|title }}</h1>
+<div class="command-help">{{ command.help|capitalize }}</div>
+
+<form action="/exec/{{ command_path }}" method="post" class="click-web-form">
     {% for field in fields %}
-        {{ field['human_readable_name'] }}
-        {% for arg in range(field['nargs']) %}
-            <input type="{{ field['type'] }}"
-                   name="{{ field['name'] }}"
-                   value="{{ field['value'] }}"
-                    {{ field['checked'] }}>
-            <br>
-        {% endfor %}
+        <div class="parameter {{ field['param'] }} {{ field['type'] }}">
+            {{ field['human_readable_name'] |capitalize}}
+            {% for arg in range(field['nargs']) %}
+                <input type="{{ field['type'] }}"
+                       name="{{ field['name'] }}"
+                       value="{{ field['value'] }}"
+                        {{ field['checked'] }}>
+                <div class="help">{{ field['desc']|capitalize }}</div>
+            {% endfor %}
+        </div>
     {% endfor %}
     <input type="submit" value="Submit">
 </form>

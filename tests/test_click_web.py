@@ -39,55 +39,54 @@ def test_command_path(cli,
     [
         (click.Argument(["an_argument", ]),
          {'checked': '',
+          'help': '',
           'human_readable_name': 'AN_ARGUMENT',
           'name': 'an_argument',
           'nargs': 1,
+          'param': 'argument',
           'type': 'text',
           'value': ''}),
         (click.Argument(["an_argument", ], nargs=2),
          {'checked': '',
+          'help': '',
           'human_readable_name': 'AN_ARGUMENT',
           'name': 'an_argument',
           'nargs': 2,
+          'param': 'argument',
           'type': 'text',
           'value': ''}),
         (click.Option(["--an_option", ]),
          {'checked': '',
           'desc': None,
+          'help': ('--an_option TEXT', ''),
           'human_readable_name': 'an_option',
           'name': '--an_option',
           'nargs': 1,
+          'param': 'option',
           'type': 'text',
           'value': ''}),
         (click.Option(["--an_option", ], nargs=2),
          {'checked': '',
           'desc': None,
+          'help': ('--an_option TEXT...', ''),
           'human_readable_name': 'an_option',
           'name': '--an_option',
           'nargs': 2,
+          'param': 'option',
           'type': 'text',
           'value': ''}),
         (click.Option(["--flag/--no-flag", ], default=True, help='help'),
          {'checked': 'checked="checked"',
           'desc': 'help',
+          'help': ('--flag / --no-flag', 'help'),
           'human_readable_name': 'flag',
           'name': '--flag',
           'nargs': 1,
+          'param': 'option',
           'type': 'checkbox',
           'value': True}),
     ])
-def test_get_input_field(cli, param, expected):
-    res = click_web.utils.get_input_field(param)
+def test_get_input_field(ctx, cli, param, expected):
+    res = click_web.utils.get_input_field(ctx, param)
     pprint.pprint(res)
     assert res == expected
-
-'''
-@click.command()
-@click.option('--pos', nargs=2, type=float)
-def findme(pos):
-    click.echo('%s / %s' % pos)
-And on the command line:
-
-$ findme --pos 2.0 3.0
-2.0 / 3.0
-'''

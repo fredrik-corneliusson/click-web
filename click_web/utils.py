@@ -1,4 +1,5 @@
 from typing import Tuple
+import numbers
 
 import click
 import click_web
@@ -30,28 +31,34 @@ def get_command_by_path(command_path: str) -> Tuple[click.Context, click.Command
         return ctx, command
 
 
-def get_input_field(param: click.Parameter) -> dict:
+def get_input_field(ctx: click.Context, param: click.Parameter) -> dict:
     """
     Convert a click.Parameter into a dict structure describing a html form option
     """
     # TODO: File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
     field = {}
+    field['param'] = param.param_type_name
     if param.param_type_name == 'option':
         if param.is_bool_flag:
             field['type'] = 'checkbox'
         else:
-            field['type'] = 'text'
+            field['type'] = _param_type_to_input_type(param)
         field['value'] = param.default if param.default else ''
         field['checked'] = 'checked="checked"' if param.default else ''
         field['desc'] = param.help
         field['name'] = '--{}'.format(param.name)
+        field['help'] = param.get_help_record(ctx)
     elif param.param_type_name == 'argument':
-        field['type'] = 'text'
+        field['type'] = _param_type_to_input_type(param)
         field['value'] = ''
         field['name'] = param.name
         field['checked'] = ''
+        field['help'] = ''
     if param.nargs < 0:
         raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
     field['nargs'] = param.nargs
     field['human_readable_name'] = param.human_readable_name
     return field
+
+def _param_type_to_input_type(param):
+    return 'number' if param.type == click.INT else 'text'

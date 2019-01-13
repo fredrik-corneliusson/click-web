@@ -25,5 +25,3 @@ def get_form_for(command_path: str):
         return abort(404, str(err))
 
     return render_command_form(ctx, command, command_path=command_path)
-
-

@@ -1,0 +1,57 @@
+.command-help {
+    background-color: lightblue;
+    color: gray;
+    font-size: x-large;
+    padding: 10px;
+}
+
+.help{
+    font-size: large;
+    color: gray;
+    margin: 10px;
+    display: inline;
+}
+
+.click-web-form {
+    background-color: powderblue;
+    padding: 10px;
+}
+
+.click-web-form input[type=submit] {
+    padding: 5px 15px;
+    background: #ccc;
+    border: 0 none;
+    cursor: pointer;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.click-web-form input {
+    background-color: lightcyan;
+    margin: 10px;
+}
+
+.parameter {
+    font-size: large;
+    background-color: lightgray;
+}
+
+.argument {
+    font-size: large;
+    background-color: gray;
+}
+
+.flag {
+    background-color: forestgreen;
+    margin: 20px;
+}
+
+.str {
+    color: red;
+    font-size: 20pt;
+}
+
+input[type=number] {
+    color: rosybrown;
+    font-size: 20pt;
+}

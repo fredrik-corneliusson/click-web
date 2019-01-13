@@ -2,7 +2,9 @@ import click
 import time
 
 @click.group()
-def cli():
+# TODO: support options on parent group
+@click.option("--debug/--no-debug", help='set debug flag')
+def cli(debug):
     'A stupid script to test click-web'
     pass
 
@@ -18,7 +20,6 @@ def printa_rader(lines, delay):
 
 
 @cli.command()
-@click.option("--debug/--no-debug", help='set debug flag')
 @click.option("--email", help='the email for user')
 @click.option("--nummer", type=int, help='ett nummer')
 @click.argument("user", default="bode")

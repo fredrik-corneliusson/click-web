@@ -27,12 +27,16 @@ def click_to_tree(node: click.BaseCommand, parents=[]):
     return res
 
 
-def render_command_form(ctx, command, command_path):
-    fields = [get_input_field(p) for p in command.get_params(ctx)]
+def render_command_form(ctx, command: click.Command, command_path):
     if command:
-        return render_template('command_form.html.j2', ctx=ctx,
-                               command=command, fields=fields, command_path=command_path)
+        # force help option off, no need in web.
+        command.add_help_option = False
+
+        fields = [get_input_field(ctx, p) for p in command.get_params(ctx)]
+        return render_template('command_form.html.j2',
+                               ctx=ctx,
+                               command=command,
+                               fields=fields,
+                               command_path=command_path)
     else:
         return abort(404, 'command not found. Must be one of {}'.format(click_web.click_root_cmd.list_commands(ctx)))
-
-

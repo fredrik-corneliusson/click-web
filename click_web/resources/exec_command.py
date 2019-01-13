@@ -15,12 +15,14 @@ def exec(command_path):
     :return:
     '''
     root_command, *commands = command_path.split('/')
-    command_args = _request_to_command_args()
 
     cmd = [sys.executable,  # run with same python executable we are running with.
            click_web.script_file]
-    cmd += commands
-    cmd += command_args
+    # root command_index should not add a command
+    cmd.extend(_request_to_command_args(0))
+    for i, command in enumerate(commands):
+        cmd.append(command)
+        cmd.extend(_request_to_command_args(i + 1))
 
     click_web.flask_app.logger.info('Executing: %s', cmd)
     process = subprocess.Popen(cmd, shell=True,
@@ -39,25 +41,34 @@ def exec(command_path):
     return Response(commands_output_stream_generator(), mimetype='text/plain')
 
 
-def _request_to_command_args() -> List[str]:
-    '''
+form_command_index_separator = '.'
+
+
+def _request_to_command_args(command_index) -> List[str]:
+    """
     Convert the post request into a list of command line arguments to be passed to click.invoke
-    :return: list of command line arguments
-    '''
+    
+    :param command_index: (int) the index for the command to get arguments for.
+    :return: list of command line arguments for command at that cmd_index
+    """
     args = []
     for key in request.form.keys():
-        if key.startswith('--'):
+        key_cmd_index, cmd_opt = key.split(form_command_index_separator)
+        if int(key_cmd_index) != command_index:
+            # not a key for this command, skip
+            continue
+        elif cmd_opt.startswith('--'):
             # it's an option
             vals = request.form.getlist(key)
             if vals:
                 # opt with value, if option was given multiple times get the values for each.
-                args.append(key)
+                args.append(cmd_opt)
                 for val in vals:
                     if val:
                         args.append(val)
             else:
                 # boolean opt
-                args.append(key)
+                args.append(cmd_opt)
 
         else:
             # argument(s)

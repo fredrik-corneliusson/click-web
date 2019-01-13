@@ -14,22 +14,24 @@ def get_form_for(command_path: str):
     except CommandNotFound as err:
         return abort(404, str(err))
 
-    return _render_command_form(ctx_and_commands, command_path=command_path)
+    levels = _generate_form_data(ctx_and_commands)
+    return render_template('command_form.html.j2',
+                           levels=levels,
+                           command=levels[-1]['command'],
+                           command_path=command_path)
 
 
-def _render_command_form(ctx_and_commands: List[Tuple[click.Context, click.Command]],
-                         command_path: str):
-    ctx, command = ctx_and_commands[-1]
-    if command:
+def _generate_form_data(ctx_and_commands: List[Tuple[click.Context, click.Command]]):
+    """
+    Construct a list of contexts and commands generate a python data structure for rendering jinja form
+    :return: a list of dicts
+    """
+    levels = []
+    for ctx, command in ctx_and_commands:
         # force help option off, no need in web.
         command.add_help_option = False
 
         fields = [get_input_field(ctx, p) for p in command.get_params(ctx)]
-        return render_template('command_form.html.j2',
-                               ctx=ctx,
-                               command=command,
-                               fields=fields,
-                               command_path=command_path)
-    else:
-        return abort(404, 'command not found. Must be one of {}'
-                     .format(click_web.click_root_cmd.list_commands(ctx)))
+        levels.append({'command':command, 'fields':fields})
+
+    return levels

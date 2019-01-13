@@ -9,17 +9,21 @@
 <div class="command-help">{{ command.help|capitalize }}</div>
 
 <form action="/exec/{{ command_path }}" method="post" class="click-web-form">
-    {% for field in fields %}
-        <div class="parameter {{ field['param'] }} {{ field['type'] }}">
-            {{ field['human_readable_name'] |capitalize}}
-            {% for arg in range(field['nargs']) %}
-                <input type="{{ field['type'] }}"
-                       name="{{ field['name'] }}"
-                       value="{{ field['value'] }}"
-                        {{ field['checked'] }}>
-                <div class="help">{{ field['desc']|capitalize }}</div>
-            {% endfor %}
-        </div>
+    {% for level in levels %}
+        {% set level_index = loop.index - 1 %}
+        {{ level.command.name }}
+        {% for field in level.fields %}
+            <div class="parameter {{ field.param }} {{ field.type }}">
+                {{ field.human_readable_name|capitalize }}
+                {% for arg in range(field.nargs) %}
+                    <input type="{{ field.type }}"
+                           name="{{ level_index }}.{{ field.name }}"
+                           value="{{ field.value }}"
+                            {{ field.checked }}>
+                    <div class="help">{{ field.desc|capitalize }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
     {% endfor %}
     <input type="submit" value="Submit">
 </form>

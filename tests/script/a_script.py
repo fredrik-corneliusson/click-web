@@ -2,6 +2,7 @@ import click
 
 
 @click.group()
+@click.option("--debug/--no-debug", help='Global debug flag')
 def cli():
     'the root command'
     pass

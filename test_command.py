@@ -1,18 +1,23 @@
 import click
 import time
 
+DEBUG = False
 @click.group()
 # TODO: support options on parent group
 @click.option("--debug/--no-debug", help='set debug flag')
 def cli(debug):
     'A stupid script to test click-web'
-    pass
+    global DEBUG
+    DEBUG=debug
+
 
 @cli.command()
 @click.option("--delay", type=float, default=0.01, help='tid mellan varje print line')
 @click.argument("lines", default=10, type=int)
 def printa_rader(lines, delay):
     'printa massa rader'
+    if DEBUG:
+        click.echo("global debug set, printing some debug output")
     click.echo(f"writing: {lines} with {delay}")
     for i in range(lines):
         click.echo("hejsan rad: {}".format(i))
@@ -33,12 +38,12 @@ def sub():
     'subgrupp'
 
 @sub.command()
-@click.option("--debug/--no-debug", help='set debug flag')
+@click.option("--blubb/--no-blubb", help='set blubb flag')
 @click.option("--email", help='the email for user', default='some@thing.xyz', nargs=2)
 @click.argument("user", default="bode")
-def commando_2(user, debug, email):
+def commando_2(user, blubb, email):
     'subkommando med nargs'
-    click.echo("hejsan {} du har satt debug till {} och din email: {}".format(user, debug, email))
+    click.echo("hejsan {} du har satt blubb till {} och din email: {}".format(user, blubb, email))
 
 @cli.group()
 def sub2():

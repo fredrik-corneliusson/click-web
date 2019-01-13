@@ -12,7 +12,7 @@ def cli(debug):
 
 
 @cli.command()
-@click.option("--delay", type=float, default=0.01, help='tid mellan varje print line')
+@click.option("--delay", type=float, default=0.01, required=True, help='tid mellan varje print line')
 @click.argument("lines", default=10, type=int)
 def printa_rader(lines, delay):
     'printa massa rader'
@@ -28,9 +28,9 @@ def printa_rader(lines, delay):
 @click.option("--email", help='the email for user')
 @click.option("--nummer", type=int, help='ett nummer')
 @click.argument("user", default="bode")
-def commando_1(user, debug, email, nummer=None):
+def commando_1(user, email, nummer=None):
     'subkommando'
-    click.echo("hejsan {} du har satt debug till {} och din email: {} nummer är: {}".format(user, debug, email, nummer))
+    click.echo("hejsan {} du har satt och din email: {} nummer är: {}".format(user,  email, nummer))
 
 
 @cli.group()

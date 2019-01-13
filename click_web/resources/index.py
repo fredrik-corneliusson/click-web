@@ -21,12 +21,13 @@ def _click_to_tree(node: click.BaseCommand, parents=[]):
     :return: a json like tree
     '''
     res_childs = []
-    if isinstance(node, click.core.Group):
+    res = OrderedDict()
+    res['is_group'] = isinstance(node, click.core.Group)
+    if res['is_group']:
         # a group, recurse for every child
         for child in node.commands.values():
             res_childs.append(_click_to_tree(child, parents[:] + [node, ]))
 
-    res = OrderedDict()
     res['name'] = node.name
     res['help'] = node.get_short_help_str()
     path_parts = parents + [node]

@@ -5,6 +5,7 @@ import click
 import pytest
 
 import click_web
+import click_web.resources.command
 import click_web.utils
 from click_web.resources.command import _generate_form_data
 
@@ -47,58 +48,63 @@ def test_command_path(cli,
 
 
 @pytest.mark.parametrize(
-    'param, expected',
+    'param, command_index, expected',
     [
-        (click.Argument(["an_argument", ]),
+        (click.Argument(["an_argument", ]), 0,
          {'checked': '',
           'help': '',
           'human_readable_name': 'AN_ARGUMENT',
-          'name': 'an_argument',
+          'name': '0.an_argument',
           'nargs': 1,
           'param': 'argument',
+          'required': True,
           'type': 'text',
           'value': ''}),
-        (click.Argument(["an_argument", ], nargs=2),
+        (click.Argument(["an_argument", ], nargs=2), 1,
          {'checked': '',
           'help': '',
           'human_readable_name': 'AN_ARGUMENT',
-          'name': 'an_argument',
+          'name': '1.an_argument',
           'nargs': 2,
           'param': 'argument',
+          'required': True,
           'type': 'text',
           'value': ''}),
-        (click.Option(["--an_option", ]),
+        (click.Option(["--an_option", ]), 0,
          {'checked': '',
           'desc': None,
           'help': ('--an_option TEXT', ''),
           'human_readable_name': 'an_option',
-          'name': '--an_option',
+          'name': '0.--an_option',
           'nargs': 1,
           'param': 'option',
+          'required': False,
           'type': 'text',
           'value': ''}),
-        (click.Option(["--an_option", ], nargs=2),
+        (click.Option(["--an_option", ], nargs=2), 1,
          {'checked': '',
           'desc': None,
           'help': ('--an_option TEXT...', ''),
           'human_readable_name': 'an_option',
-          'name': '--an_option',
+          'name': '1.--an_option',
           'nargs': 2,
           'param': 'option',
+          'required': False,
           'type': 'text',
           'value': ''}),
-        (click.Option(["--flag/--no-flag", ], default=True, help='help'),
+        (click.Option(["--flag/--no-flag", ], default=True, help='help'), 3,
          {'checked': 'checked="checked"',
           'desc': 'help',
           'help': ('--flag / --no-flag', 'help'),
           'human_readable_name': 'flag',
-          'name': '--flag',
+          'name': '3.--flag',
           'nargs': 1,
           'param': 'option',
+          'required': False,
           'type': 'checkbox',
           'value': True}),
     ])
-def test_get_input_field(ctx, cli, param, expected):
-    res = click_web.utils.get_input_field(ctx, param)
+def test_get_input_field(ctx, cli, param, expected, command_index):
+    res = click_web.resources.command._get_input_field(ctx, param, command_index)
     pprint.pprint(res)
     assert res == expected

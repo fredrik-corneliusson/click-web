@@ -5,21 +5,28 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
 </head>
 <body>
+<a href="/">Back to index</a>
 <h1>{{ command.name|title }}</h1>
 <div class="command-help">{{ command.help|capitalize }}</div>
 
 <form action="/exec/{{ command_path }}" method="post" class="click-web-form">
     {% for level in levels %}
-        {% set level_index = loop.index - 1 %}
-        {{ level.command.name }}
+        <div class="command-header">{{ level.command.name }}</div>
         {% for field in level.fields %}
             <div class="parameter {{ field.param }} {{ field.type }}">
                 {{ field.human_readable_name|capitalize }}
                 {% for arg in range(field.nargs) %}
-                    <input type="{{ field.type }}"
-                           name="{{ level_index }}.{{ field.name }}"
+                    <input name="{{ field.name }}"
+                           type="{{ field.type }}"
+                            {% if field.step %}
+                           step="{{ field.step }}"
+                            {% endif %}
                            value="{{ field.value }}"
-                            {{ field.checked }}>
+                            {{ field.checked }}
+                            {{ 'required' if field['required'] else '' }}
+
+
+                    >
                     <div class="help">{{ field.desc|capitalize }}</div>
                 {% endfor %}
             </div>
@@ -27,6 +34,5 @@
     {% endfor %}
     <input type="submit" value="Submit">
 </form>
-
 </body>
 </html>

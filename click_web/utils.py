@@ -2,7 +2,6 @@ from typing import Tuple
 
 import click
 import click_web
-from click_web import exceptions
 
 from click_web.exceptions import CommandNotFound
 
@@ -35,36 +34,3 @@ def get_commands_by_path(command_path: str) -> Tuple[click.Context, click.Comman
                                       .format(command_path, command_name, parent_command.list_commands(ctx)))
             result.append((ctx, command))
     return result
-
-def get_input_field(ctx: click.Context, param: click.Parameter) -> dict:
-    """
-    Convert a click.Parameter into a dict structure describing a html form option
-    """
-    # TODO: File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
-    field = {}
-    field['param'] = param.param_type_name
-    if param.param_type_name == 'option':
-        if param.is_bool_flag:
-            field['type'] = 'checkbox'
-        else:
-            field['type'] = _param_type_to_input_type(param)
-        field['value'] = param.default if param.default else ''
-        field['checked'] = 'checked="checked"' if param.default else ''
-        field['desc'] = param.help
-        field['name'] = '--{}'.format(param.name)
-        field['help'] = param.get_help_record(ctx)
-    elif param.param_type_name == 'argument':
-        field['type'] = _param_type_to_input_type(param)
-        field['value'] = ''
-        field['name'] = param.name
-        field['checked'] = ''
-        field['help'] = ''
-    if param.nargs < 0:
-        raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
-    field['nargs'] = param.nargs
-    field['human_readable_name'] = param.human_readable_name
-    return field
-
-
-def _param_type_to_input_type(param):
-    return 'number' if param.type == click.INT else 'text'

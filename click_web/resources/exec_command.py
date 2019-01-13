@@ -7,10 +7,12 @@ import click_web
 
 import subprocess
 
+from click_web.resources.command import form_command_index_separator
+
 
 def exec(command_path):
     '''
-    Execute the command, will execute the script via Popen
+    Execute the command, will execute the script via Popen and stream the output from it as response
     :param command_path:
     :return:
     '''
@@ -39,9 +41,6 @@ def exec(command_path):
         click_web.flask_app.logger.info('script finished Pid: %d', process.pid)
 
     return Response(commands_output_stream_generator(), mimetype='text/plain')
-
-
-form_command_index_separator = '.'
 
 
 def _request_to_command_args(command_index) -> List[str]:

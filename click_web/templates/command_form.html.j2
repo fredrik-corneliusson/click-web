@@ -11,26 +11,38 @@
 
 <form action="/exec/{{ command_path }}" method="post" class="click-web-form">
     {% for level in levels %}
-        <div class="command-header">{{ level.command.name }}</div>
-        {% for field in level.fields %}
-            <div class="parameter {{ field.param }} {{ field.type }}">
-                {{ field.human_readable_name|capitalize }}
-                {% for arg in range(field.nargs) %}
-                    <input name="{{ field.name }}"
-                           type="{{ field.type }}"
-                            {% if field.step %}
-                           step="{{ field.step }}"
-                            {% endif %}
-                           value="{{ field.value }}"
-                            {{ field.checked }}
-                            {{ 'required' if field['required'] else '' }}
+        <fieldset name="{{ level.command.name }}">
+            <div class="command-header">{{ level.command.name }}</div>
+            {% for field in level.fields %}
+                <div class="parameter {{ field.param }} {{ field.type }}">
+                    <label for="{{ field.name }}">
+                        <span class="label-text">{{ field.human_readable_name|capitalize }}</span></label>
+                    {% for arg in range(field.nargs) %}
+                        {% if field.type == 'option' %}
+                            <select name="{{ field.name }}">
+                                {% for option in field.options %}
+                                    <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input name="{{ field.name }}"
+                                   id="{{ field.name }}"
+                                   type="{{ field.type }}"
+                                    {% if field.step %}
+                                   step="{{ field.step }}"
+                                    {% endif %}
+                                   value="{{ field.value }}"
+                                    {{ field.checked }}
+                                    {{ 'required' if field.required else '' }}
 
 
-                    >
-                    <div class="help">{{ field.desc|capitalize }}</div>
-                {% endfor %}
-            </div>
-        {% endfor %}
+                            >
+                        {% endif %}
+                        <div class="help">{{ field.desc|capitalize }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </fieldset>
     {% endfor %}
     <input type="submit" value="Submit">
 </form>

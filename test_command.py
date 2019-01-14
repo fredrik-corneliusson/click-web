@@ -13,14 +13,16 @@ def cli(debug):
 
 @cli.command()
 @click.option("--delay", type=float, default=0.01, required=True, help='tid mellan varje print line')
+@click.option("--message", type=click.Choice(['Hej', 'Hopp']), default='Hej', required=True,
+              help='Meddelande att skriva ut.')
 @click.argument("lines", default=10, type=int)
-def printa_rader(lines, delay):
+def printa_rader(lines, message, delay):
     'printa massa rader'
     if DEBUG:
         click.echo("global debug set, printing some debug output")
     click.echo(f"writing: {lines} with {delay}")
     for i in range(lines):
-        click.echo("hejsan rad: {}".format(i))
+        click.echo(f"{message} rad: {i}")
         time.sleep(delay)
 
 

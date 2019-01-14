@@ -7,7 +7,7 @@ import click_web
 
 import subprocess
 
-from click_web.resources.command import form_command_index_separator
+from click_web.resources.command import separator
 
 
 def exec(command_path):
@@ -52,7 +52,7 @@ def _request_to_command_args(command_index) -> List[str]:
     """
     args = []
     for key in request.form.keys():
-        key_cmd_index, cmd_opt = key.split(form_command_index_separator)
+        key_cmd_index, option_type, cmd_opt = key.split(separator)
         if int(key_cmd_index) != command_index:
             # not a key for this command, skip
             continue
@@ -61,10 +61,13 @@ def _request_to_command_args(command_index) -> List[str]:
             vals = request.form.getlist(key)
             if vals:
                 # opt with value, if option was given multiple times get the values for each.
-                args.append(cmd_opt)
-                for val in vals:
-                    if val:
-                        args.append(val)
+                if option_type == 'flag' or ''.join(vals):
+                    # flag options should always be set if we get them
+                    # for normal options they must have a non empty value
+                    args.append(cmd_opt)
+                    for val in vals:
+                        if val:
+                            args.append(val)
             else:
                 # boolean opt
                 args.append(cmd_opt)

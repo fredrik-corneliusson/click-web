@@ -1,20 +1,35 @@
-.command-help {
-    background-color: lightblue;
-    color: gray;
-    font-size: x-large;
-    padding: 10px;
+body {
+    font-family: Arial, Verdana, Tahoma;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.429;
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #FFF;
 }
 
-.help{
+h1 {
+    color: rgba(0, 0, 0, 0.54);
+}
+.command-help {
+    /*color: gray;*/
     font-size: large;
+    /*padding: 10px;*/
+}
+
+.command-header {
     color: gray;
-    margin: 10px;
+    font-size: small;
+}
+
+.help {
+    font-size: small;
+    color: gray;
     display: inline;
 }
 
 .click-web-form {
-    background-color: powderblue;
-    padding: 10px;
+    /*background-color: powderblue;*/
+    /*padding: 10px;*/
 }
 
 .click-web-form input[type=submit] {
@@ -33,19 +48,26 @@
 
 .parameter {
     font-size: large;
-    background-color: lightgray;
 }
 
 .argument {
     font-size: large;
-    background-color: gray;
 }
 
 .flag {
-    background-color: forestgreen;
     margin: 20px;
 }
 
 input[type=number] {
-    color: rosybrown;
+    font-family: monospace;
+}
+
+fieldset {
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-top: 0.35em;
+    padding-bottom: 0.625em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    border: none;
 }

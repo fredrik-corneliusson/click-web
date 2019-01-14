@@ -7,11 +7,10 @@ import click_web
 from click_web import exceptions
 from click_web.exceptions import CommandNotFound
 
-form_command_index_separator = '.'
+separator = '.'
 
 
 def get_form_for(command_path: str):
-    # skip the first path part as it's the roots name (cli)
     try:
         ctx_and_commands = _get_commands_by_path(command_path)
     except CommandNotFound as err:
@@ -87,13 +86,11 @@ def _get_input_field(ctx: click.Context, param: click.Parameter, command_index) 
         field['help'] = param.get_help_record(ctx)
     elif param.param_type_name == 'argument':
         name = param.name
-        field['value'] = ''
+        field['value'] = param.default
         field['checked'] = ''
         field['help'] = ''
 
-    # in order for form to be have arguments for sub commands we need to add the
-    # index of the command the argument belongs to
-    field['name'] = f'{command_index}.{name}'
+    field['name'] = _build_name(command_index, param, name)
     field['required'] = param.required
 
     if param.nargs < 0:
@@ -103,14 +100,32 @@ def _get_input_field(ctx: click.Context, param: click.Parameter, command_index) 
     return field
 
 
-def _param_type_to_input_type(param):
+def _build_name(command_index: int, param: click.Parameter, name: str):
+    """
+    Construct a name to use for field in form that have information about
+    what sub-command it belongs and type of parameter.
+    """
+    # get the type of param to encode the in the name
+    if param.param_type_name == 'option':
+        param_type = 'flag' if param.is_bool_flag else 'option'
+    else:
+        param_type = param.param_type_name
+    # in order for form to be have arguments for sub commands we need to add the
+    # index of the command the argument belongs to
+    return separator.join(str(p) for p in (command_index, param_type, name))
+
+
+def _param_type_to_input_type(param: click.Parameter):
     """
     take a param and return a dict with html form type attrs
     :param param:
     :return:
     """
     type_attrs = {}
-    if param.param_type_name == 'option' and param.is_bool_flag:
+    if isinstance(param.type, click.Choice):
+        type_attrs['type'] = 'option'
+        type_attrs['options'] = param.type.choices
+    elif param.param_type_name == 'option' and param.is_bool_flag:
         type_attrs['type'] = 'checkbox'
     elif param.type == click.INT:
         type_attrs['type'] = 'number'

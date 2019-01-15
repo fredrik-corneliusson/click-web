@@ -59,5 +59,10 @@ def commando_2(user, debug, email):
     'subkommando'
     click.echo("hejsan {} du har satt debug till {} och din email: {}".format(user, debug, email))
 
+
+import flask.cli
+
+cli.add_command(flask.cli.run_command)
+
 if __name__ == '__main__':
     cli()

@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, Verdana, Tahoma;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.429;
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #FFF;
+    margin: 10px;
+}
+
+h1 {
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.command-help {
+    /*color: gray;*/
+    font-size: large;
+    /*padding: 10px;*/
+}
+
+.command-header {
+    color: gray;
+    font-size: small;
+}
+
+.help {
+    font-size: small;
+    color: gray;
+    display: inline;
+    margin-left: 10px;
+}
+
+.click-web-form {
+    /*background-color: powderblue;*/
+    /*padding: 10px;*/
+}
+
+input[type=number] {
+    font-family: monospace;
+}

@@ -2,49 +2,54 @@
 <html lang="en">
 <head>
     <title>{{ command.name|title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pure.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
 </head>
 <body>
 <a href="/">Back to index</a>
 <h1>{{ command.name|title }}</h1>
 <div class="command-help">{{ command.help|capitalize }}</div>
 
-<form action="/exec/{{ command_path }}" method="post" class="click-web-form">
+<form action="/exec/{{ command_path }}" method="post" class="pure-form pure-form-aligned">
     {% for level in levels %}
         <fieldset name="{{ level.command.name }}">
-            <div class="command-header">{{ level.command.name }}</div>
+            <legend class="command-header">{{ level.command.name }}</legend>
             {% for field in level.fields %}
                 <div class="parameter {{ field.param }} {{ field.type }}">
-                    <label for="{{ field.name }}">
-                        <span class="label-text">{{ field.human_readable_name|capitalize }}</span></label>
-                    {% for arg in range(field.nargs) %}
-                        {% if field.type == 'option' %}
-                            <select name="{{ field.name }}">
-                                {% for option in field.options %}
-                                    <option value="{{ option }}">{{ option }}</option>
-                                {% endfor %}
-                            </select>
-                        {% else %}
-                            <input name="{{ field.name }}"
-                                   id="{{ field.name }}"
-                                   type="{{ field.type }}"
-                                    {% if field.step %}
-                                   step="{{ field.step }}"
-                                    {% endif %}
-                                   value="{{ field.value }}"
-                                    {{ field.checked }}
-                                    {{ 'required' if field.required else '' }}
+                    <div class="pure-control-group">
+                        {% for arg in range(field.nargs) %}
+                            <label for="{{ field.name }}">
+                                {{ field.human_readable_name|capitalize }}
+                            </label>
+                            {% if field.type == 'option' %}
+                                <select name="{{ field.name }}">
+                                    {% for option in field.options %}
+                                        <option value="{{ option }}">{{ option }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <input name="{{ field.name }}"
+                                       id="{{ field.name }}"
+                                       type="{{ field.type }}"
+                                        {% if field.step %}
+                                       step="{{ field.step }}"
+                                        {% endif %}
+                                       value="{{ field.value }}"
+                                        {{ field.checked }}
+                                        {{ 'required' if field.required else '' }}
 
 
-                            >
-                        {% endif %}
-                        <div class="help">{{ field.desc|capitalize }}</div>
-                    {% endfor %}
+                                >
+                            {% endif %}
+                            <div class="help" style="display: inline-block">{{ field.desc|capitalize }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
             {% endfor %}
         </fieldset>
     {% endfor %}
-    <input type="submit" value="Submit">
+    <button type="submit" class="pure-button pure-button-primary">Run</button>
+    {#    <input type="submit" value="Submit" >#}
 </form>
 </body>
 </html>

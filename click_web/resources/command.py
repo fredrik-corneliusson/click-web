@@ -79,13 +79,13 @@ def _get_input_field(ctx: click.Context, param: click.Parameter, command_index) 
     field['param'] = param.param_type_name
     field.update(_param_type_to_input_type(param))
     if param.param_type_name == 'option':
-        name = '--{}'.format(param.name)
+        name = '--{}'.format(_to_cmd_line_name(param.name))
         field['value'] = param.default if param.default else ''
         field['checked'] = 'checked="checked"' if param.default else ''
         field['desc'] = param.help
         field['help'] = param.get_help_record(ctx)
     elif param.param_type_name == 'argument':
-        name = param.name
+        name = _to_cmd_line_name(param.name)
         field['value'] = param.default
         field['checked'] = ''
         field['help'] = ''
@@ -96,8 +96,12 @@ def _get_input_field(ctx: click.Context, param: click.Parameter, command_index) 
     if param.nargs < 0:
         raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
     field['nargs'] = param.nargs
-    field['human_readable_name'] = param.human_readable_name
+    field['human_readable_name'] = param.human_readable_name.replace('_', ' ')
     return field
+
+
+def _to_cmd_line_name(name: str) -> str:
+    return name.replace('_', '-')
 
 
 def _build_name(command_index: int, param: click.Parameter, name: str):

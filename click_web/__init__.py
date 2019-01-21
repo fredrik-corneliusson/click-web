@@ -12,7 +12,6 @@ script_file = None
 'The click root command to serve'
 click_root_cmd = None
 
-#TODO: how to register multiple click root commands?
 def register(module, command: click.BaseCommand):
     '''
 

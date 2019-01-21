@@ -60,9 +60,29 @@ def commando_2(user, debug, email):
     click.echo("hejsan {} du har satt debug till {} och din email: {}".format(user, debug, email))
 
 
-import flask.cli
+def add_external_command(USE_MULTI_COMMAND = False):
+    """
+    Shows an example on how to add external click commands from other modules
+    """
+    global cli
+    import flask.cli
 
-cli.add_command(flask.cli.run_command)
+    @click.group()
+    def flask_cli():
+        'flask cli'
+        pass
+
+    flask_cli.add_command(flask.cli.run_command)
+    if USE_MULTI_COMMAND:
+        # Using CommandCollection will work but you will loose the group level options
+        cli = click.CommandCollection(name='A multi command example', sources=[cli, flask_cli])
+    else:
+        # adding command or group to existing hierarchy
+        cli.add_command(flask_cli)
+
+add_external_command()
+
+
 
 if __name__ == '__main__':
     cli()

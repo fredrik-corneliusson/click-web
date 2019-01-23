@@ -27,7 +27,7 @@ def _get_commands_by_path(command_path: str) -> Tuple[click.Context, click.Comma
     """
     Take a (slash separated) string and generate (context, command) for each level.
     :param command_path: "some_group/a_command"
-    :return: Return a list from root to leaf comand. each element is (Click.Context, Click.Command)
+    :return: Return a list from root to leaf commands. each element is (Click.Context, Click.Command)
     """
     command_path_items = command_path.split('/')
     command_name, *command_path_items = command_path_items
@@ -63,14 +63,14 @@ def _generate_form_data(ctx_and_commands: List[Tuple[click.Context, click.Comman
         # force help option off, no need in web.
         command.add_help_option = False
 
-        input_fields = [_get_input_field(ctx, param, command_index)
-                        for param in command.get_params(ctx)]
+        input_fields = [_get_input_field(ctx, param, command_index, param_index)
+                        for param_index, param in enumerate(command.get_params(ctx))]
         levels.append({'command': command, 'fields': input_fields})
 
     return levels
 
 
-def _get_input_field(ctx: click.Context, param: click.Parameter, command_index) -> dict:
+def _get_input_field(ctx: click.Context, param: click.Parameter, command_index, param_index) -> dict:
     """
     Convert a click.Parameter into a dict structure describing a html form option
     """
@@ -90,7 +90,7 @@ def _get_input_field(ctx: click.Context, param: click.Parameter, command_index) 
         field['checked'] = ''
         field['help'] = ''
 
-    field['name'] = _build_name(command_index, param, name)
+    field['name'] = _build_name(command_index, param_index, param, name)
     field['required'] = param.required
 
     if param.nargs < 0:
@@ -104,10 +104,10 @@ def _to_cmd_line_name(name: str) -> str:
     return name.replace('_', '-')
 
 
-def _build_name(command_index: int, param: click.Parameter, name: str):
+def _build_name(command_index: int, param_index:int, param: click.Parameter, name: str):
     """
     Construct a name to use for field in form that have information about
-    what sub-command it belongs and type of parameter.
+    what sub-command it belongs order index (for later sorting) and type of parameter.
     """
     # get the type of param to encode the in the name
     if param.param_type_name == 'option':
@@ -116,7 +116,7 @@ def _build_name(command_index: int, param: click.Parameter, name: str):
         param_type = param.param_type_name
     # in order for form to be have arguments for sub commands we need to add the
     # index of the command the argument belongs to
-    return separator.join(str(p) for p in (command_index, param_type, name))
+    return separator.join(str(p) for p in (command_index, param_index, param_type, name))
 
 
 def _param_type_to_input_type(param: click.Parameter):
@@ -131,12 +131,14 @@ def _param_type_to_input_type(param: click.Parameter):
         type_attrs['options'] = param.type.choices
     elif param.param_type_name == 'option' and param.is_bool_flag:
         type_attrs['type'] = 'checkbox'
-    elif param.type == click.INT:
+    elif isinstance(param.type, click.types.IntParamType):
         type_attrs['type'] = 'number'
         type_attrs['step'] = '1'
-    elif param.type == click.FLOAT:
+    elif isinstance(param.type, click.types.FloatParamType):
         type_attrs['type'] = 'number'
         type_attrs['step'] = 'any'
+    elif isinstance(param.type, click.File):
+        type_attrs['type'] = 'file'
     else:
         type_attrs['type'] = 'text'
     return type_attrs

@@ -53,7 +53,7 @@ def test_command_path(cli,
          {'checked': '',
           'help': '',
           'human_readable_name': 'AN ARGUMENT',
-          'name': '0.argument.an-argument',
+          'name': '0.0.argument.an-argument',
           'nargs': 1,
           'param': 'argument',
           'required': True,
@@ -63,7 +63,7 @@ def test_command_path(cli,
          {'checked': '',
           'help': '',
           'human_readable_name': 'AN ARGUMENT',
-          'name': '1.argument.an-argument',
+          'name': '1.0.argument.an-argument',
           'nargs': 2,
           'param': 'argument',
           'required': True,
@@ -74,7 +74,7 @@ def test_command_path(cli,
           'desc': None,
           'help': ('--an_option TEXT', ''),
           'human_readable_name': 'an option',
-          'name': '0.option.--an-option',
+          'name': '0.0.option.--an-option',
           'nargs': 1,
           'param': 'option',
           'required': False,
@@ -85,7 +85,7 @@ def test_command_path(cli,
           'desc': None,
           'help': ('--an_option TEXT...', ''),
           'human_readable_name': 'an option',
-          'name': '1.option.--an-option',
+          'name': '1.0.option.--an-option',
           'nargs': 2,
           'param': 'option',
           'required': False,
@@ -96,7 +96,7 @@ def test_command_path(cli,
           'desc': 'help',
           'help': ('--flag / --no-flag', 'help'),
           'human_readable_name': 'flag',
-          'name': '3.flag.--flag',
+          'name': '3.0.flag.--flag',
           'nargs': 1,
           'param': 'option',
           'required': False,
@@ -104,6 +104,26 @@ def test_command_path(cli,
           'value': True}),
     ])
 def test_get_input_field(ctx, cli, param, expected, command_index):
-    res = click_web.resources.command._get_input_field(ctx, param, command_index)
+    res = click_web.resources.command._get_input_field(ctx, param, command_index, 0)
+    pprint.pprint(res)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    'param, command_index, expected',
+    [
+        (click.Argument(["a_file_argument", ], type=click.File('rb')), 0,
+         {'checked': '',
+          'help': '',
+          'human_readable_name': 'A FILE ARGUMENT',
+          'name': '0.0.argument.a-file-argument',
+          'nargs': 1,
+          'param': 'argument',
+          'required': True,
+          'type': 'file',
+          'value': None}),
+    ])
+def test_get_file_input_field(ctx, cli, param, expected, command_index):
+    res = click_web.resources.command._get_input_field(ctx, param, command_index, 0)
     pprint.pprint(res)
     assert res == expected

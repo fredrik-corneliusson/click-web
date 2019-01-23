@@ -12,6 +12,24 @@ def cli(debug):
 
 
 @cli.command()
+@click.argument('input', type=click.File('rb'))
+@click.argument('output', type=click.File('wb'))
+def processafiler(input: click.File, output: click.File):
+    'Process files'
+    if DEBUG:
+        click.echo("global debug set, printing some debug output")
+    while True:
+        click.echo(f"Reading from {input.name}...")
+        chunk = input.read(1024)
+        if not chunk:
+            break
+        click.echo(f"Writing to {output.name}...")
+
+        chunk = chunk.upper()
+        output.write(chunk)
+    click.echo({output.name})
+
+@cli.command()
 @click.option("--delay", type=float, default=0.01, required=True, help='tid mellan varje print line')
 @click.option("--message", type=click.Choice(['Hej', 'Hopp']), default='Hej', required=True,
               help='Meddelande att skriva ut.')
@@ -80,7 +98,7 @@ def add_external_command(USE_MULTI_COMMAND = False):
         # adding command or group to existing hierarchy
         cli.add_command(flask_cli)
 
-add_external_command()
+add_external_command(False)
 
 
 

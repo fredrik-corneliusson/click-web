@@ -1,5 +1,5 @@
 from click_web import flask_app, register
 
-import test_command
+import example_command
 
-register(test_command, test_command.cli)
+register(example_command, example_command.cli)

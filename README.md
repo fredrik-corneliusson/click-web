@@ -47,3 +47,6 @@ export FLASK_APP=app.py
 flask run
 ```
  
+# TODO
+* File and directory support
+* Abort started/running processes.

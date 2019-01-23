@@ -114,9 +114,12 @@ def _build_name(command_index: int, param_index:int, param: click.Parameter, nam
         param_type = 'flag' if param.is_bool_flag else 'option'
     else:
         param_type = param.param_type_name
+
+    click_type = _param_type_to_input_type(param)['click_type']
+
     # in order for form to be have arguments for sub commands we need to add the
     # index of the command the argument belongs to
-    return separator.join(str(p) for p in (command_index, param_index, param_type, name))
+    return separator.join(str(p) for p in (command_index, param_index, param_type, click_type, name))
 
 
 def _param_type_to_input_type(param: click.Parameter):
@@ -129,16 +132,22 @@ def _param_type_to_input_type(param: click.Parameter):
     if isinstance(param.type, click.Choice):
         type_attrs['type'] = 'option'
         type_attrs['options'] = param.type.choices
+        type_attrs['click_type'] = 'choice'
     elif param.param_type_name == 'option' and param.is_bool_flag:
         type_attrs['type'] = 'checkbox'
+        type_attrs['click_type'] = 'bool_flag'
     elif isinstance(param.type, click.types.IntParamType):
         type_attrs['type'] = 'number'
         type_attrs['step'] = '1'
+        type_attrs['click_type'] = 'int'
     elif isinstance(param.type, click.types.FloatParamType):
         type_attrs['type'] = 'number'
         type_attrs['step'] = 'any'
+        type_attrs['click_type'] = 'float'
     elif isinstance(param.type, click.File):
         type_attrs['type'] = 'file'
+        type_attrs['click_type'] = f'file[{param.type.mode}]'
     else:
         type_attrs['type'] = 'text'
+        type_attrs['click_type'] = 'text'
     return type_attrs

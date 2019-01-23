@@ -13,6 +13,8 @@ import subprocess
 
 from click_web.resources.command import separator
 
+log = None
+
 
 def exec(command_path):
     '''
@@ -20,6 +22,9 @@ def exec(command_path):
     :param command_path:
     :return:
     '''
+    global log
+    log = click_web.flask_app.logger
+
     root_command, *commands = command_path.split('/')
 
     cmd = [sys.executable,  # run with same python executable we are running with.
@@ -31,14 +36,12 @@ def exec(command_path):
         cmd.append(command)
         cmd.extend(r.command_args(i + 1))
 
-    click_web.flask_app.logger.info('Files to path: %s', r.fields_filepath)
-
-    click_web.flask_app.logger.info('Executing: %s', cmd)
+    log.info('Executing: %s', cmd)
     process = subprocess.Popen(cmd, shell=True,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
                                bufsize=1)
-    click_web.flask_app.logger.info('script running Pid: %d', process.pid)
+    log.info('script running Pid: %d', process.pid)
 
     def commands_output_stream_generator():
         encoding = locale.getpreferredencoding(False)
@@ -55,8 +58,6 @@ def exec(command_path):
 
 
 class RequestToCommandArgs:
-    def __init__(self):
-        self.fields_filepath = {}
 
     def command_args(self, command_index) -> List[str]:
         """
@@ -67,7 +68,10 @@ class RequestToCommandArgs:
         """
         click_web.flask_app.logger.info("files: %r", request.files)
         args = []
-        field_infos = [FieldInfo(key) for key in list(request.form.keys()) + list(request.files.keys())]
+        field_file_infos = [FieldFileInfo(key) for key in list(request.files.keys())]
+        field_infos = [FieldInfo(key) for key in list(request.form.keys())]
+        field_infos += field_file_infos
+
         # only include relevant fields for this command index
         field_infos = [fi for fi in field_infos if fi.cmd_index == command_index]
         field_infos = sorted(field_infos)
@@ -76,7 +80,7 @@ class RequestToCommandArgs:
             click_web.flask_app.logger.info('filed info: %s', fi)
             if fi.key in request.files:
                 # it's a file, save it to temp location and insert it's path into request.form
-                self._handle_file(fi)
+                fi.save()
 
             if fi.cmd_opt.startswith('--'):
                 # it's an option
@@ -84,30 +88,13 @@ class RequestToCommandArgs:
 
             else:
                 # argument(s)
-                if fi.key in self.fields_filepath:
+                if fi in field_file_infos:
                     # it's a file, append the written temp file path
                     # TODO: does file upload support multiple keys? In that case support it.
-                    args.append(self.fields_filepath[fi.key])
+                    args.append(fi.file_path)
                 else:
                     args.extend(request.form.getlist(fi.key))
         return args
-
-    def _handle_file(self, field_info):
-        # TODO: handle Paths (upload zip file)
-        click_web.flask_app.logger.info('field value is a file! %s', field_info.key)
-        file = request.files[field_info.key]
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            raise ValueError('No selected file')
-        elif file and file.filename:
-            fd, filename = tempfile.mkstemp(prefix='click-web-')
-            # filename = secure_filename(file.filename)
-            self.fields_filepath[field_info.key] = filename
-            file.save(filename)
-            # zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
-            # zip_ref.extractall(UPLOAD_FOLDER)
-            # zip_ref.close()
 
     def _process_option(self, field_info):
         # TODO: handle options that takes File
@@ -130,8 +117,8 @@ class FieldInfo:
     """
     Extract information from the encoded form input field name
     e.g.
-        "0.0.option.--an-option"
-        "0.1.argument.an-argument"
+        "0.0.option.text.--an-option"
+        "0.1.argument.file.an-argument"
     """
 
     def __init__(self, key):
@@ -144,8 +131,10 @@ class FieldInfo:
         self.parameter_index = int(parts[1])
         'Type of option (argument, option, flag)'
         self.option_type = parts[2]
+        'Type of option (argument, option, flag)'
+        self.type = parts[3]
         'The actual command line option (--debug)'
-        self.cmd_opt = parts[3]
+        self.cmd_opt = parts[4]
 
     def __str__(self):
         res = []
@@ -153,9 +142,60 @@ class FieldInfo:
         res.append(f'key_cmd_index: {self.cmd_index}')
         res.append(f'parameter_index: {self.parameter_index}')
         res.append(f'option_type: {self.option_type}')
+        res.append(f'type: {self.type}')
         res.append(f'cmd_opt: {self.cmd_opt}')
         return ', '.join(res)
 
     def __lt__(self, other):
         "Make class sortable"
         return (self.cmd_index, self.parameter_index) < (other.cmd_index, other.parameter_index)
+
+    def __eq__(self, other):
+        return self.key == other.key
+
+
+class FieldFileInfo(FieldInfo):
+    """
+    Use for processing input fileds of file type.
+    Saves the posted data to a temp file.
+    """
+    'temp dir is on class in order to be uniqe for each request'
+    _temp_dir = None
+
+    def __init__(self, key):
+        super().__init__(key)
+        self.file_path = None
+        # Extract the file mode that is in the type e.g file[rw]
+        self.type, mode = self.type.split('[')
+        self.mode = mode[:-1]
+        self.generate_download_link = True if 'w' in self.mode else False
+
+        log.info(f'File mode for {self.key} is  {mode}')
+
+    @classmethod
+    def temp_dir(cls):
+        if not cls._temp_dir:
+            cls._temp_dir = tempfile.mkdtemp(prefix='click-web-')
+        log.info(f'Temp dir: {cls._temp_dir}')
+        return cls._temp_dir
+
+    def save(self):
+        # TODO: handle Paths (upload zip file)
+        log.info('Saving...')
+
+        click_web.flask_app.logger.info('field value is a file! %s', self.key)
+        file = request.files[self.key]
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            raise ValueError('No selected file')
+        elif file and file.filename:
+            filename = secure_filename(file.filename)
+
+            fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=filename)
+            self.file_path = filename
+            log.info(f'Saving {self.key} to {filename}')
+            file.save(filename)
+            # zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
+            # zip_ref.extractall(UPLOAD_FOLDER)
+            # zip_ref.close()

@@ -1,10 +1,12 @@
 import locale
+import os
 import sys
 import tempfile
 from html import escape
+from pathlib import Path
 from typing import List
 
-from flask import request, Response
+from flask import request, Response, url_for
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -17,11 +19,10 @@ log = None
 
 
 def exec(command_path):
-    '''
-    Execute the command, will execute the script via Popen and stream the output from it as response
+    """
+    Execute the command and stream the output from it as response
     :param command_path:
-    :return:
-    '''
+    """
     global log
     log = click_web.flask_app.logger
 
@@ -29,13 +30,20 @@ def exec(command_path):
 
     cmd = [sys.executable,  # run with same python executable we are running with.
            click_web.script_file]
-    r = RequestToCommandArgs()
+    req_to_args = RequestToCommandArgs()
     # root command_index should not add a command
-    cmd.extend(r.command_args(0))
+    cmd.extend(req_to_args.command_args(0))
     for i, command in enumerate(commands):
         cmd.append(command)
-        cmd.extend(r.command_args(i + 1))
+        cmd.extend(req_to_args.command_args(i + 1))
 
+    return Response(_run_script_and_generate_stream(req_to_args, cmd), mimetype='text/html')
+
+
+def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: List[str]):
+    """
+    Execute the command the via Popen and yield output
+    """
     log.info('Executing: %s', cmd)
     process = subprocess.Popen(cmd, shell=True,
                                stdout=subprocess.PIPE,
@@ -43,18 +51,35 @@ def exec(command_path):
                                bufsize=1)
     log.info('script running Pid: %d', process.pid)
 
-    def commands_output_stream_generator():
-        encoding = locale.getpreferredencoding(False)
-        yield '<pre>'
-        with process.stdout:
-            for line in iter(process.stdout.readline, b''):
-                yield escape(line.decode(encoding))
-        process.wait()  # wait for the subprocess to exit
-        yield '</pre>'
-        yield '<b>Done</b>'
-        click_web.flask_app.logger.info('script finished Pid: %d', process.pid)
+    encoding = locale.getpreferredencoding(False)
 
-    return Response(commands_output_stream_generator(), mimetype='text/html')
+    yield '<pre>'
+    with process.stdout:
+        for line in iter(process.stdout.readline, b''):
+            yield escape(line.decode(encoding))
+    process.wait()  # wait for the subprocess to exit
+    yield '</pre>'
+
+    to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link]
+    if to_download:
+        yield '<b>Result files:</b><br>'
+    else:
+        yield '<b>Done!</b><br><br>'
+
+    for fi in to_download:
+        yield '<ul> '
+        yield f'<li>{_build_relative_link(fi)}<br>'
+        yield '</ul>'
+
+    click_web.flask_app.logger.info('script finished Pid: %d', process.pid)
+
+
+def _build_relative_link(field_info):
+    """Hack as url_for needed SERVER_NAME config set"""
+
+    rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
+    uri = f'/static/results/{rel_file_path.as_posix()}'
+    return f'<a href="{uri}">{field_info.cmd_opt}</a>'
 
 
 class RequestToCommandArgs:
@@ -74,9 +99,9 @@ class RequestToCommandArgs:
 
         # only include relevant fields for this command index
         field_infos = [fi for fi in field_infos if fi.cmd_index == command_index]
-        field_infos = sorted(field_infos)
+        self.field_infos = sorted(field_infos)
 
-        for fi in field_infos:
+        for fi in self.field_infos:
             click_web.flask_app.logger.info('filed info: %s', fi)
             if fi.key in request.files:
                 # it's a file, save it to temp location and insert it's path into request.form
@@ -136,6 +161,8 @@ class FieldInfo:
         'The actual command line option (--debug)'
         self.cmd_opt = parts[4]
 
+        self.generate_download_link = False
+
     def __str__(self):
         res = []
         res.append(f'key: {self.key}')
@@ -175,7 +202,7 @@ class FieldFileInfo(FieldInfo):
     @classmethod
     def temp_dir(cls):
         if not cls._temp_dir:
-            cls._temp_dir = tempfile.mkdtemp(prefix='click-web-')
+            cls._temp_dir = tempfile.mkdtemp(dir=click_web.OUTPUT_FOLDER)
         log.info(f'Temp dir: {cls._temp_dir}')
         return cls._temp_dir
 
@@ -191,8 +218,9 @@ class FieldFileInfo(FieldInfo):
             raise ValueError('No selected file')
         elif file and file.filename:
             filename = secure_filename(file.filename)
+            name, suffix = os.path.splitext(filename)
 
-            fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=filename)
+            fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name, suffix=suffix)
             self.file_path = filename
             log.info(f'Saving {self.key} to {filename}')
             file.save(filename)

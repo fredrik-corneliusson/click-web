@@ -75,6 +75,8 @@ def _get_input_field(ctx: click.Context, param: click.Parameter, command_index, 
     Convert a click.Parameter into a dict structure describing a html form option
     """
     # TODO: File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
+    # TODO: if file is only output (no 'w' in mode) generate a hidden input field
+
     field = {}
     field['param'] = param.param_type_name
     field.update(_param_type_to_input_type(param))

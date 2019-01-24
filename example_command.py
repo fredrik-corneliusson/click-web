@@ -20,7 +20,7 @@ def processafiler(input: click.File, output: click.File):
         click.echo("global debug set, printing some debug output")
     while True:
         click.echo(f"Reading from {input.name}...")
-        chunk = input.read(1024)
+        chunk = input.read(2048)
         if not chunk:
             break
         click.echo(f"Writing to {output.name}...")

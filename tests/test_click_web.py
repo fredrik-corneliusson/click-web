@@ -10,7 +10,7 @@ from click_web.resources.command import _generate_form_data
 
 
 def test_register(cli, loaded_script_module):
-    click_web.register(loaded_script_module, cli)
+    click_web._register(loaded_script_module, cli)
 
     assert click_web.script_file == str(Path(loaded_script_module.__file__).absolute())
     assert click_web.click_root_cmd == cli
@@ -18,7 +18,7 @@ def test_register(cli, loaded_script_module):
 
 def test_render_command_form(cli, loaded_script_module):
     cmd_path = 'cli/some-command'
-    click_web.register(loaded_script_module, cli)
+    click_web._register(loaded_script_module, cli)
     ctx_and_commands = click_web.resources.command._get_commands_by_path(cmd_path)
     res = _generate_form_data(ctx_and_commands)
     assert len(res) == 2
@@ -39,7 +39,7 @@ def test_command_path(cli,
                       command_path,
                       command_name,
                       command_help):
-    click_web.register(loaded_script_module, cli)
+    click_web._register(loaded_script_module, cli)
     ctx, command = click_web.resources.command._get_commands_by_path(command_path)[-1]
 
     assert command.name == command_name
@@ -128,6 +128,18 @@ def test_get_input_field(ctx, cli, param, expected, command_index):
           'required': True,
           'type': 'file',
           'value': None}),
+        (click.Option(["--a_file_option", ], type=click.File('rb')), 0,
+         {'checked': '',
+          'click_type': 'file[rb]',
+          'desc': None,
+          'help': ('--a_file_option FILENAME', ''),
+          'human_readable_name': 'a file option',
+          'name': '0.0.option.file[rb].--a-file-option',
+          'nargs': 1,
+          'param': 'option',
+          'required': False,
+          'type': 'file',
+          'value': ''}),
     ])
 def test_get_file_input_field(ctx, cli, param, expected, command_index):
     res = click_web.resources.command._get_input_field(ctx, param, command_index, 0)

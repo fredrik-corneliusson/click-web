@@ -17,7 +17,7 @@ def cli():
 @cli.command()
 @click.option("--delay", type=float, default=0.01, help='delay for every line print')
 @click.argument("lines", default=10, type=int)
-def printa_rader(lines, delay):
+def print_rows(lines, delay):
     'Prints lines with a delay'
     click.echo(f"writing: {lines} with {delay}")
     for i in range(lines):
@@ -32,11 +32,10 @@ if __name__ == '__main__':
 ### Create a minimal script to run with flask
 `app.py`
 ```
-from click_web import flask_app, register
+from click_web import create_click_web_app
+from example import example_command
 
-import test_command
-
-register(test_command, test_command.cli)
+app = create_click_web_app(example_command, example_command.cli)
 ```
 
 ### Running example app:

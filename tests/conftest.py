@@ -1,19 +1,3 @@
-import click
-import pytest
-
-
-@pytest.fixture(name='loaded_script_module')
-def _loaded_script_module():
-    import tests.script.a_script
-    yield tests.script.a_script
-
-
-@pytest.fixture(name='cli')
-def _click_command(loaded_script_module):
-    yield loaded_script_module.cli
-
-
-@pytest.fixture(name='ctx')
-def _ctx(cli):
-    with click.Context(cli, info_name=cli, parent=None) as ctx:
-        yield ctx
+# flake8: noqa
+from tests.fixtures.click_fixtures import loaded_script_module, cli, ctx
+from tests.fixtures.flask_fixtures import app, client

@@ -3,10 +3,15 @@ import click
 
 @click.group()
 @click.option("--debug/--no-debug", help='Global debug flag')
-def cli():
+def cli(debug):
     'the root command'
     pass
 
+
+@cli.command()
+def simple_no_params_command():
+    'Help text'
+    click.echo(f"Simpel noparams command called")
 
 @cli.command()
 @click.option("--an_option", type=str, default="option_value", help='help for an option')

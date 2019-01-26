@@ -6,7 +6,7 @@ from html import escape
 from pathlib import Path
 from typing import List
 
-from flask import request, Response, url_for
+from flask import request, Response
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -24,7 +24,7 @@ def exec(command_path):
     :param command_path:
     """
     global log
-    log = click_web.flask_app.logger
+    log = click_web.logger
 
     root_command, *commands = command_path.split('/')
 
@@ -71,7 +71,7 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
         yield f'<li>{_build_relative_link(fi)}<br>'
         yield '</ul>'
 
-    click_web.flask_app.logger.info('script finished Pid: %d', process.pid)
+    log.info('script finished Pid: %d', process.pid)
 
 
 def _build_relative_link(field_info):
@@ -91,7 +91,7 @@ class RequestToCommandArgs:
         :param command_index: (int) the index for the command to get arguments for.
         :return: list of command line arguments for command at that cmd_index
         """
-        click_web.flask_app.logger.info("files: %r", request.files)
+        log.info("files: %r", request.files)
         args = []
         field_file_infos = [FieldFileInfo(key) for key in list(request.files.keys())]
         field_infos = [FieldInfo(key) for key in list(request.form.keys())]
@@ -102,7 +102,7 @@ class RequestToCommandArgs:
         self.field_infos = sorted(field_infos)
 
         for fi in self.field_infos:
-            click_web.flask_app.logger.info('filed info: %s', fi)
+            log.info('filed info: %s', fi)
             if fi.key in request.files:
                 # it's a file, save it to temp location and insert it's path into request.form
                 fi.save()
@@ -143,7 +143,7 @@ class FieldInfo:
     Extract information from the encoded form input field name
     e.g.
         "0.0.option.text.--an-option"
-        "0.1.argument.file.an-argument"
+        "0.1.argument.file[rb].an-argument"
     """
 
     def __init__(self, key):
@@ -210,7 +210,7 @@ class FieldFileInfo(FieldInfo):
         # TODO: handle Paths (upload zip file)
         log.info('Saving...')
 
-        click_web.flask_app.logger.info('field value is a file! %s', self.key)
+        log.info('field value is a file! %s', self.key)
         file = request.files[self.key]
         # if user does not select file, browser also
         # submit a empty part without filename

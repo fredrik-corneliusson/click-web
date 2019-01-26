@@ -2,19 +2,34 @@ import click
 import time
 
 DEBUG = False
+
+
 @click.group()
-# TODO: support options on parent group
 @click.option("--debug/--no-debug", help='set debug flag')
 def cli(debug):
     'A stupid script to test click-web'
     global DEBUG
-    DEBUG=debug
+    DEBUG = debug
+
+
+@cli.command()
+@click.option('--input', type=click.File('rb'))
+def process_file(input: click.File):
+    'Process file'
+    if input is None:
+        click.echo("no input file given")
+    while True:
+        click.echo(f"Reading from {input.name}...")
+        chunk = input.read(2048)
+        if not chunk:
+            break
+        click.echo(chunk.upper())
 
 
 @cli.command()
 @click.argument('input', type=click.File('rb'))
 @click.argument('output', type=click.File('wb'))
-def processafiler(input: click.File, output: click.File):
+def process_files(input: click.File, output: click.File):
     'Process files'
     if DEBUG:
         click.echo("global debug set, printing some debug output")
@@ -28,6 +43,7 @@ def processafiler(input: click.File, output: click.File):
         chunk = chunk.upper()
         output.write(chunk)
     click.echo({output.name})
+
 
 @cli.command()
 @click.option("--delay", type=float, default=0.01, required=True, help='tid mellan varje print line')
@@ -50,12 +66,13 @@ def printa_rader(lines, message, delay):
 @click.argument("user", default="bode")
 def commando_1(user, email, nummer=None):
     'subkommando'
-    click.echo("hejsan {} du har satt och din email: {} nummer är: {}".format(user,  email, nummer))
+    click.echo("hejsan {} du har satt och din email: {} nummer är: {}".format(user, email, nummer))
 
 
 @cli.group()
 def sub():
     'subgrupp'
+
 
 @sub.command()
 @click.option("--blubb/--no-blubb", help='set blubb flag')
@@ -65,20 +82,22 @@ def commando_2(user, blubb, email):
     'subkommando med nargs'
     click.echo("hejsan {} du har satt blubb till {} och din email: {}".format(user, blubb, email))
 
+
 @cli.group()
 def sub2():
     'subgrupp'
+
 
 @sub2.command()
 @click.option("--debug/--no-debug", help='set debug flag')
 @click.option("--email", help='the email for user')
 @click.argument("user", default="bode")
-def commando_2(user, debug, email):
+def commando_2_2(user, debug, email):
     'subkommando'
     click.echo("hejsan {} du har satt debug till {} och din email: {}".format(user, debug, email))
 
 
-def add_external_command(USE_MULTI_COMMAND = False):
+def add_external_command(USE_MULTI_COMMAND=False):
     """
     Shows an example on how to add external click commands from other modules
     """
@@ -98,9 +117,8 @@ def add_external_command(USE_MULTI_COMMAND = False):
         # adding command or group to existing hierarchy
         cli.add_command(flask_cli)
 
+
 add_external_command(False)
-
-
 
 if __name__ == '__main__':
     cli()

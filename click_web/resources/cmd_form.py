@@ -4,10 +4,8 @@ import click
 from flask import render_template, abort
 
 import click_web
-from click_web import exceptions
 from click_web.exceptions import CommandNotFound
-
-separator = '.'
+from click_web.resources.input_fields import get_input_field
 
 
 def get_form_for(command_path: str):
@@ -63,97 +61,8 @@ def _generate_form_data(ctx_and_commands: List[Tuple[click.Context, click.Comman
         # force help option off, no need in web.
         command.add_help_option = False
 
-        input_fields = [_get_input_field(ctx, param, command_index, param_index)
+        input_fields = [get_input_field(ctx, param, command_index, param_index)
                         for param_index, param in enumerate(command.get_params(ctx))]
         levels.append({'command': command, 'fields': input_fields})
 
     return levels
-
-
-def _get_input_field(ctx: click.Context, param: click.Parameter, command_index, param_index) -> dict:
-    """
-    Convert a click.Parameter into a dict structure describing a html form option
-    """
-    # TODO: File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
-    # TODO: if file is only output (no 'w' in mode) generate a hidden input field
-
-    field = {}
-    field['param'] = param.param_type_name
-    field.update(_param_type_to_input_type(param))
-    if param.param_type_name == 'option':
-        name = '--{}'.format(_to_cmd_line_name(param.name))
-        field['value'] = param.default if param.default else ''
-        field['checked'] = 'checked="checked"' if param.default else ''
-        field['desc'] = param.help
-        field['help'] = param.get_help_record(ctx)
-    elif param.param_type_name == 'argument':
-        name = _to_cmd_line_name(param.name)
-        field['value'] = param.default
-        field['checked'] = ''
-        field['help'] = ''
-
-    field['name'] = _build_name(command_index, param_index, param, name)
-    field['required'] = param.required
-
-    if param.nargs < 0:
-        raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
-    field['nargs'] = param.nargs
-    field['human_readable_name'] = param.human_readable_name.replace('_', ' ')
-    return field
-
-
-def _to_cmd_line_name(name: str) -> str:
-    return name.replace('_', '-')
-
-
-def _build_name(command_index: int, param_index: int, param: click.Parameter, name: str):
-    """
-    Construct a name to use for field in form that have information about
-    what sub-command it belongs order index (for later sorting) and type of parameter.
-    """
-    # get the type of param to encode the in the name
-    if param.param_type_name == 'option':
-        param_type = 'flag' if param.is_bool_flag else 'option'
-    else:
-        param_type = param.param_type_name
-
-    click_type = _param_type_to_input_type(param)['click_type']
-
-    # in order for form to be have arguments for sub commands we need to add the
-    # index of the command the argument belongs to
-    return separator.join(str(p) for p in (command_index, param_index, param_type, click_type, name))
-
-
-def _param_type_to_input_type(param: click.Parameter):
-    """
-    take a param and return a dict with html form type attrs
-    :param param:
-    :return:
-    """
-    type_attrs = {}
-    if isinstance(param.type, click.Choice):
-        type_attrs['type'] = 'option'
-        type_attrs['options'] = param.type.choices
-        type_attrs['click_type'] = 'choice'
-    elif param.param_type_name == 'option' and param.is_bool_flag:
-        type_attrs['type'] = 'checkbox'
-        type_attrs['click_type'] = 'bool_flag'
-    elif isinstance(param.type, click.types.IntParamType):
-        type_attrs['type'] = 'number'
-        type_attrs['step'] = '1'
-        type_attrs['click_type'] = 'int'
-    elif isinstance(param.type, click.types.FloatParamType):
-        type_attrs['type'] = 'number'
-        type_attrs['step'] = 'any'
-        type_attrs['click_type'] = 'float'
-    elif isinstance(param.type, click.File):
-        type_attrs['click_type'] = f'file[{param.type.mode}]'
-        if 'r' not in param.type.mode:
-            # if file is only for output do not show in form
-            type_attrs['type'] = 'hidden'
-        else:
-            type_attrs['type'] = 'file'
-    else:
-        type_attrs['type'] = 'text'
-        type_attrs['click_type'] = 'text'
-    return type_attrs

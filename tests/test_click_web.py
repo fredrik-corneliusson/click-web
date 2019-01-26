@@ -6,6 +6,7 @@ import pytest
 
 import click_web
 import click_web.resources.cmd_form
+import click_web.resources.input_fields
 from click_web.resources.cmd_form import _generate_form_data
 
 
@@ -109,7 +110,7 @@ def test_command_path(cli,
           'value': True}),
     ])
 def test_get_input_field(ctx, cli, param, expected, command_index):
-    res = click_web.resources.cmd_form._get_input_field(ctx, param, command_index, 0)
+    res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
     pprint.pprint(res)
     assert res == expected
 
@@ -142,6 +143,6 @@ def test_get_input_field(ctx, cli, param, expected, command_index):
           'value': ''}),
     ])
 def test_get_file_input_field(ctx, cli, param, expected, command_index):
-    res = click_web.resources.cmd_form._get_input_field(ctx, param, command_index, 0)
+    res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
     pprint.pprint(res)
     assert res == expected

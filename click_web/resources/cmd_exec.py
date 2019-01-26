@@ -13,7 +13,7 @@ import click_web
 
 import subprocess
 
-from click_web.resources.cmd_form import separator
+from .input_fields import separator
 
 log = None
 
@@ -86,7 +86,10 @@ class RequestToCommandArgs:
 
     def __init__(self):
         fis = [FieldInfo(key) for key in list(request.form.keys())]
-        fis = [(FieldDummyFileInfo(fi.key) if fi.type.startswith('file') else fi) for fi in fis]
+
+        # The fields that are of file type but in request.form instead of request files
+        # are not uploaded and thus output files.
+        fis = [(FieldOutFileInfo(fi.key) if fi.is_file else fi) for fi in fis]
         file_infos = [FieldFileInfo(key) for key in list(request.files.keys())]
         self.field_infos = fis + file_infos
 
@@ -122,7 +125,11 @@ class RequestToCommandArgs:
     def _process_option(self, field_info):
         # TODO: handle options that takes File
         vals = request.form.getlist(field_info.key)
-        if vals:
+        if field_info.is_file:
+            # it's a file, append the file path
+            yield field_info.cmd_opt
+            yield field_info.file_path
+        elif vals:
             # opt with value, if option was given multiple times get the values for each.
             if field_info.option_type == 'flag' or ''.join(vals):
                 # flag options should always be set if we get them
@@ -156,6 +163,8 @@ class FieldInfo:
         self.option_type = parts[2]
         'Type of option (file, text)'
         self.type = parts[3]
+        self.is_file = self.type.startswith('file')
+
         'The actual command line option (--debug)'
         self.cmd_opt = parts[4]
 
@@ -234,7 +243,7 @@ class FieldFileInfo(FieldInfo):
         return ', '.join(res)
 
 
-class FieldDummyFileInfo(FieldFileInfo):
+class FieldOutFileInfo(FieldFileInfo):
     """
     Used when file option is just for output and form posted it as hidden field.
     Just create a empty temp file to give it's path to command.

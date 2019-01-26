@@ -27,7 +27,7 @@ app = flask.Flask(__name__)
         ),
     ])
 def test_form_post_to_commandline_arguments(data, expected):
-    with app.test_request_context(f'/exec/command', data=data):
+    with app.test_request_context(f'/command', data=data):
         r = RequestToCommandArgs()
         for i, expect in enumerate(expected):
             assert r.command_args(i) == expected[i]

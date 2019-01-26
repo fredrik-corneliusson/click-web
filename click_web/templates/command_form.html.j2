@@ -10,7 +10,7 @@
 <h1>{{ command.name|title }}</h1>
 <div class="command-help">{{ command.help|capitalize }}</div>
 
-<form action="/exec/{{ command_path }}"
+<form action="/{{ command_path }}"
       method="post"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">

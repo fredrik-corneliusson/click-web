@@ -33,19 +33,19 @@ def _get_form_ids(html):
 
 
 def test_exec_command(app, client):
-    resp = client.post('/exec/cli/simple-no-params-command')
+    resp = client.post('/cli/simple-no-params-command')
     assert resp.status_code == 200
     assert b'Simpel noparams command called' in resp.data
 
 
 def test_exec_sub_command(app, client):
-    resp = client.post('/exec/cli/sub-group/a-sub-group-command')
+    resp = client.post('/cli/sub-group/a-sub-group-command')
     assert resp.status_code == 200
     assert b'Sub group command called' in resp.data
 
 
 def test_exec_default_arg_and_opt(app, client):
-    resp = client.post('/exec/cli/command-with-option-and-argument')
+    resp = client.post('/cli/command-with-option-and-argument')
     assert resp.status_code == 200
     assert b'Ran command with option: option_value argument 10' in resp.data
 
@@ -71,7 +71,7 @@ def test_exec_default_arg_and_opt(app, client):
 
     ])
 def test_exec_with_arg_and_default_opt(form_data, expected_msg, app, client):
-    resp = client.post('/exec/cli/command-with-option-and-argument',
+    resp = client.post('/cli/command-with-option-and-argument',
                        data=form_data)
     assert resp.status_code == 200
     assert expected_msg in resp.data

@@ -53,7 +53,7 @@ def create_click_web_app(module, command: click.BaseCommand):
 
     _flask_app.add_url_rule('/', 'index', click_web.resources.index.index)
     _flask_app.add_url_rule('/<path:command_path>', 'command', click_web.resources.command.get_form_for)
-    _flask_app.add_url_rule('/exec/<path:command_path>', 'command_execute', click_web.resources.exec_command.exec,
+    _flask_app.add_url_rule('/<path:command_path>', 'command_execute', click_web.resources.exec_command.exec,
                             methods=['POST'])
 
     _flask_app.logger.info(f'OUTPUT_FOLDER: {OUTPUT_FOLDER}')

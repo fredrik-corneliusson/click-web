@@ -13,7 +13,7 @@ import click_web
 
 import subprocess
 
-from click_web.resources.command import separator
+from click_web.resources.cmd_form import separator
 
 log = None
 

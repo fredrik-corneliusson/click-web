@@ -147,8 +147,12 @@ def _param_type_to_input_type(param: click.Parameter):
         type_attrs['step'] = 'any'
         type_attrs['click_type'] = 'float'
     elif isinstance(param.type, click.File):
-        type_attrs['type'] = 'file'
         type_attrs['click_type'] = f'file[{param.type.mode}]'
+        if 'r' not in param.type.mode:
+            # if file is only for output do not show in form
+            type_attrs['type'] = 'hidden'
+        else:
+            type_attrs['type'] = 'file'
     else:
         type_attrs['type'] = 'text'
         type_attrs['click_type'] = 'text'

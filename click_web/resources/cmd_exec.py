@@ -84,6 +84,12 @@ def _build_relative_link(field_info):
 
 class RequestToCommandArgs:
 
+    def __init__(self):
+        fis = [FieldInfo(key) for key in list(request.form.keys())]
+        fis = [(FieldDummyFileInfo(fi.key) if fi.type.startswith('file') else fi) for fi in fis]
+        file_infos = [FieldFileInfo(key) for key in list(request.files.keys())]
+        self.field_infos = fis + file_infos
+
     def command_args(self, command_index) -> List[str]:
         """
         Convert the post request into a list of command line arguments
@@ -91,29 +97,21 @@ class RequestToCommandArgs:
         :param command_index: (int) the index for the command to get arguments for.
         :return: list of command line arguments for command at that cmd_index
         """
-        log.info("files: %r", request.files)
         args = []
-        field_file_infos = [FieldFileInfo(key) for key in list(request.files.keys())]
-        field_infos = [FieldInfo(key) for key in list(request.form.keys())]
-        field_infos += field_file_infos
 
         # only include relevant fields for this command index
-        field_infos = [fi for fi in field_infos if fi.cmd_index == command_index]
-        self.field_infos = sorted(field_infos)
+        commands_field_infos = [fi for fi in self.field_infos if fi.cmd_index == command_index]
+        commands_field_infos = sorted(commands_field_infos)
 
-        for fi in self.field_infos:
+        for fi in commands_field_infos:
             log.info('filed info: %s', fi)
-            if fi.key in request.files:
-                # it's a file, save it to temp location and insert it's path into request.form
-                fi.save()
-
             if fi.cmd_opt.startswith('--'):
                 # it's an option
                 args.extend(self._process_option(fi))
 
             else:
                 # argument(s)
-                if fi in field_file_infos:
+                if isinstance(fi, FieldFileInfo):
                     # it's a file, append the written temp file path
                     # TODO: does file upload support multiple keys? In that case support it.
                     args.append(fi.file_path)
@@ -156,7 +154,7 @@ class FieldInfo:
         self.parameter_index = int(parts[1])
         'Type of option (argument, option, flag)'
         self.option_type = parts[2]
-        'Type of option (argument, option, flag)'
+        'Type of option (file, text)'
         self.type = parts[3]
         'The actual command line option (--debug)'
         self.cmd_opt = parts[4]
@@ -191,13 +189,13 @@ class FieldFileInfo(FieldInfo):
 
     def __init__(self, key):
         super().__init__(key)
-        self.file_path = None
         # Extract the file mode that is in the type e.g file[rw]
         self.type, mode = self.type.split('[')
         self.mode = mode[:-1]
         self.generate_download_link = True if 'w' in self.mode else False
 
         log.info(f'File mode for {self.key} is  {mode}')
+        self.save()
 
     @classmethod
     def temp_dir(cls):
@@ -224,6 +222,27 @@ class FieldFileInfo(FieldInfo):
             self.file_path = filename
             log.info(f'Saving {self.key} to {filename}')
             file.save(filename)
-            # zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
-            # zip_ref.extractall(UPLOAD_FOLDER)
-            # zip_ref.close()
+
+        # zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
+        # zip_ref.extractall(UPLOAD_FOLDER)
+        # zip_ref.close()
+
+    def __str__(self):
+
+        res = [super().__str__()]
+        res.append(f'file_path: {self.file_path}')
+        return ', '.join(res)
+
+
+class FieldDummyFileInfo(FieldFileInfo):
+    """
+    Used when file option is just for output and form posted it as hidden field.
+    Just create a empty temp file to give it's path to command.
+    """
+
+    def save(self):
+        name = secure_filename(self.key)
+
+        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name)
+        log.info(f'Creating empty file for {self.key} as {filename}')
+        self.file_path = filename

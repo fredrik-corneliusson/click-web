@@ -39,7 +39,7 @@ def create_click_web_app(module, command: click.BaseCommand):
 
         import a_click_script
 
-        create_click_web_app(a_click_script, a_click_script.a_group_or_command)
+        app = create_click_web_app(a_click_script, a_click_script.a_group_or_command)
 
     '''
     global _flask_app, logger

@@ -14,7 +14,8 @@ requirements = [
 
 testing_requirements = [
     'pytest>=4.1',
-    'flake8>=3.6'
+    'flake8>=3.6',
+    'beautifulsoup4>=4.7.1'
 ]
 
 

@@ -1,6 +1,8 @@
 # click-web
 Serve click scripts over the web with minimal effort.
 
+_Caution_: No security (login etc.), do not serve dangours scripts publicly.
+
 ## usage
 
 ### Take an existing click script, like this one:

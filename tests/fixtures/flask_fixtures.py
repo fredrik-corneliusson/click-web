@@ -3,6 +3,7 @@ from click_web import create_click_web_app
 
 _app = None
 
+
 @pytest.fixture
 def app(loaded_script_module, cli):
     global _app

@@ -106,7 +106,7 @@ def _to_cmd_line_name(name: str) -> str:
     return name.replace('_', '-')
 
 
-def _build_name(command_index: int, param_index:int, param: click.Parameter, name: str):
+def _build_name(command_index: int, param_index: int, param: click.Parameter, name: str):
     """
     Construct a name to use for field in form that have information about
     what sub-command it belongs order index (for later sorting) and type of parameter.

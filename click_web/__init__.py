@@ -13,18 +13,20 @@ script_file = None
 'The click root command to serve'
 click_root_cmd = None
 
+
 def _get_output_folder():
     _output_folder = (Path(tempfile.gettempdir()) / 'click-web')
     if not _output_folder.exists():
         _output_folder.mkdir()
     return _output_folder
 
+
 'Where to place result files for download'
 OUTPUT_FOLDER = str(_get_output_folder())
 
-
 _flask_app = None
 logger = None
+
 
 def create_click_web_app(module, command: click.BaseCommand):
     '''
@@ -51,8 +53,8 @@ def create_click_web_app(module, command: click.BaseCommand):
 
     _flask_app.add_url_rule('/', 'index', click_web.resources.index.index)
     _flask_app.add_url_rule('/<path:command_path>', 'command', click_web.resources.command.get_form_for)
-    _flask_app.add_url_rule('/exec/<path:command_path>', 'command_execute', click_web.resources.exec_command.exec, methods=['POST'])
-
+    _flask_app.add_url_rule('/exec/<path:command_path>', 'command_execute', click_web.resources.exec_command.exec,
+                            methods=['POST'])
 
     _flask_app.logger.info(f'OUTPUT_FOLDER: {OUTPUT_FOLDER}')
     results_blueprint = Blueprint('results', __name__, static_url_path='/static/results', static_folder=OUTPUT_FOLDER)

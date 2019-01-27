@@ -1,3 +1,6 @@
+from datetime import datetime
+from pathlib import Path
+
 import click
 import time
 
@@ -31,8 +34,8 @@ def print_lines(lines, message, delay):
 @click.option("--email", help='the email for user')
 @click.option("--number", type=int, help='a number')
 @click.argument("user", default="bode")
-def a_sub_command(user, email, number=None):
-    "A sub command"
+def simple_command(user, email, number=None):
+    "Command with text and number inputs"
     click.echo(f"Hi {user}, your email was set to: {email} and number is: {number}")
 
 
@@ -64,7 +67,12 @@ def a_nested_sub_command(user, debug, email):
     click.echo(f"Hi {user}, debug set to {debug} and email: {email}")
 
 
-@cli.command()
+@cli.group()
+def file_handling():
+    'Commands to test file and folder handling'
+
+
+@file_handling.command()
 @click.option('--input', type=click.File('rb'))
 def process_optional_file(input: click.File):
     "Process a file given as option"
@@ -78,7 +86,7 @@ def process_optional_file(input: click.File):
         click.echo(chunk.upper())
 
 
-@cli.command()
+@file_handling.command()
 @click.argument('input', type=click.File('rb'))
 @click.argument('output', type=click.File('wb'))
 def process_input_file(input: click.File, output: click.File):
@@ -97,6 +105,25 @@ def process_input_file(input: click.File, output: click.File):
     click.echo({output.name})
 
 
+@file_handling.command()
+@click.argument('folder', type=click.Path(exists=True))
+def process_input_folder(folder):
+    "Process a folder"
+    click.echo(click.format_filename(folder))
+    all_files = Path(folder).rglob("*")
+    click.echo('\n'.join(str(f) for f in all_files))
+
+
+@file_handling.command()
+@click.argument('folder', type=click.Path())
+def process_output_folder(folder):
+    "Produce output in a folder"
+    click.echo(click.format_filename(folder))
+    out_file = (Path(folder) / 'out_file.txt')
+    with open(out_file, 'w') as out:
+        out.write(f"This was written by process_output_folder {datetime.now()}")
+
+
 def add_external_command(USE_MULTI_COMMAND=False):
     """
     Shows an example of how to add external click commands from other modules
@@ -104,7 +131,12 @@ def add_external_command(USE_MULTI_COMMAND=False):
     global cli
     import flask.cli
 
-    @click.group()
+    @cli.group()
+    def test_external():
+        'Shows an example of how to add external click commands from other modules'
+        pass
+
+    @test_external.group()
     def flask_cli():
         'flask cli'
         pass

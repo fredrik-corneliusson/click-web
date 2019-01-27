@@ -34,5 +34,17 @@ def command_with_option_and_argument(an_argument, an_option):
     click.echo(f"Ran command with option: {an_option} argument {an_argument}")
 
 
+@cli.command()
+@click.argument('folder', type=click.Path(exists=True))
+def command_with_input_folder(folder):
+    click.echo(click.format_filename(folder))
+
+
+@cli.command()
+@click.argument('folder', type=click.Path())
+def command_with_output_folder(folder):
+    click.echo(click.format_filename(folder))
+
+
 if __name__ == '__main__':
     cli()

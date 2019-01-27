@@ -17,6 +17,10 @@ def test_get_index(app, client):
          ['0.0.flag.bool_flag.--debug', '1.0.option.text.--an-option', '1.1.argument.int.an-argument']),
         ('/cli/sub-group/a-sub-group-command', 200, b'<title>A-Sub-Group-Command</title>',
          ['0.0.flag.bool_flag.--debug']),
+        ('/cli/command-with-input-folder', 200, b'<title>Command-With-Input-Folder</title>',
+         ['0.0.flag.bool_flag.--debug', '1.0.argument.path[r].folder']),
+        ('/cli/command-with-output-folder', 200, b'<title>Command-With-Output-Folder</title>',
+         ['0.0.flag.bool_flag.--debug', '1.0.argument.path[w].folder']),
     ])
 def test_get_command(command_path, response_code, expected_msg, expected_form_ids, app, client):
     resp = client.get(command_path)

@@ -35,6 +35,7 @@
                                        id="{{ field.name }}"
                                        type="{{ field.type }}"
                                         {% if field.step %} step="{{ field.step }}"{% endif %}
+                                        {% if field.accept %} accept="{{ field.accept }}"{% endif %}
                                        value="{{ field.value }}"
                                         {{ field.checked }}
                                         {{ 'required' if field.required else '' }}

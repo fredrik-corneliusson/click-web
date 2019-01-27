@@ -143,6 +143,24 @@ class FileInput(BaseInput):
         return type_attrs
 
 
+class FolderInput(BaseInput):
+    param_type_cls = click.Path
+
+    @property
+    def type_attrs(self):
+        type_attrs = {}
+        # if it is required we treat it as an input folder
+        # and only accept zip.
+        mode = 'r' if self.param.type.exists else 'w'
+        type_attrs['click_type'] = f'path[{mode}]'
+        if self.param.type.exists:
+            type_attrs['accept'] = "application/zip"
+            type_attrs['type'] = 'file'
+        else:
+            type_attrs['type'] = 'hidden'
+        return type_attrs
+
+
 class DefaultInput(BaseInput):
     param_type_cls = click.ParamType
 
@@ -154,7 +172,7 @@ class DefaultInput(BaseInput):
         return type_attrs
 
 
-INPUT_TYPES = [ChoiceInput, FlagInput, IntInput, FloatInput, FileInput, DefaultInput]
+INPUT_TYPES = [ChoiceInput, FlagInput, IntInput, FloatInput, FileInput, FolderInput, DefaultInput]
 
 
 def get_input_field(ctx: click.Context, param: click.Parameter, command_index, param_index) -> dict:

@@ -1,7 +1,9 @@
 import locale
 import os
+import shutil
 import sys
 import tempfile
+import zipfile
 from html import escape
 from pathlib import Path
 from typing import List
@@ -60,6 +62,9 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
     process.wait()  # wait for the subprocess to exit
     yield '</pre>'
 
+    for fi in req_to_args.field_infos:
+        fi.after_script_executed()
+
     to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link]
     if to_download:
         yield '<b>Result files:</b><br>'
@@ -85,13 +90,7 @@ def _build_relative_link(field_info):
 class RequestToCommandArgs:
 
     def __init__(self):
-        fis = [FieldInfo(key) for key in list(request.form.keys())]
-
-        # The fields that are of file type but in request.form instead of request files
-        # are not uploaded and thus output files.
-        fis = [(FieldOutFileInfo(fi.key) if fi.is_file else fi) for fi in fis]
-        file_infos = [FieldFileInfo(key) for key in list(request.files.keys())]
-        self.field_infos = fis + file_infos
+        self.field_infos = [FieldInfo.factory(key) for key in list(request.form.keys()) + list(request.files.keys())]
 
     def command_args(self, command_index) -> List[str]:
         """
@@ -123,7 +122,6 @@ class RequestToCommandArgs:
         return args
 
     def _process_option(self, field_info):
-        # TODO: handle options that takes File
         vals = request.form.getlist(field_info.key)
         if field_info.is_file:
             # it's a file, append the file path
@@ -151,6 +149,27 @@ class FieldInfo:
         "0.1.argument.file[rb].an-argument"
     """
 
+    @staticmethod
+    def factory(key):
+        parts = key.split(separator)
+        type = parts[3]
+        is_file = type.startswith('file')
+        is_path = type.startswith('path')
+        is_uploaded = key in request.files
+        if is_file:
+            if is_uploaded:
+                field_info = FieldFileInfo(key)
+            else:
+                field_info = FieldOutFileInfo(key)
+        elif is_path:
+            if is_uploaded:
+                field_info = FieldPathInfo(key)
+            else:
+                field_info = FieldPathOutInfo(key)
+        else:
+            field_info = FieldInfo(key)
+        return field_info
+
     def __init__(self, key):
         self.key = key
 
@@ -169,6 +188,9 @@ class FieldInfo:
         self.cmd_opt = parts[4]
 
         self.generate_download_link = False
+
+    def after_script_executed(self):
+        pass
 
     def __str__(self):
         res = []
@@ -214,7 +236,6 @@ class FieldFileInfo(FieldInfo):
         return cls._temp_dir
 
     def save(self):
-        # TODO: handle Paths (upload zip file)
         log.info('Saving...')
 
         log.info('field value is a file! %s', self.key)
@@ -231,10 +252,6 @@ class FieldFileInfo(FieldInfo):
             self.file_path = filename
             log.info(f'Saving {self.key} to {filename}')
             file.save(filename)
-
-        # zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
-        # zip_ref.extractall(UPLOAD_FOLDER)
-        # zip_ref.close()
 
     def __str__(self):
 
@@ -255,3 +272,54 @@ class FieldOutFileInfo(FieldFileInfo):
         fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name)
         log.info(f'Creating empty file for {self.key} as {filename}')
         self.file_path = filename
+
+
+class FieldPathInfo(FieldFileInfo):
+    """
+    Use for processing input fields of path type.
+    Extracts the posted data to a temp folder.
+    When script finished zip that folder and provide download link to zip file.
+    """
+
+    def save(self):
+        super().save()
+        zip_ref = zipfile.ZipFile(self.file_path, 'r')
+        zip_extract_dir = tempfile.mkdtemp(dir=self.temp_dir())
+
+        log.info(f'Extracting: {self.file_path} to {zip_extract_dir}')
+        self.file_path = zip_extract_dir
+
+        zip_ref.extractall(zip_extract_dir)
+        zip_ref.close()
+
+    def after_script_executed(self):
+        super().after_script_executed()
+        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
+        folder_path = self.file_path
+        self.file_path = filename
+        log.info(f'Zipping {self.key} to {filename}')
+        self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
+        log.info(f'Zip file created {self.file_path}')
+        self.generate_download_link = True
+
+
+class FieldPathOutInfo(FieldOutFileInfo):
+    """
+    Use for processing output fields of path type.
+    Create a folder and use as path to script.
+    When script finished zip that folder and provide download link to zip file.
+    """
+
+    def save(self):
+        super().save()
+        self.file_path = tempfile.mkdtemp(dir=self.temp_dir())
+
+    def after_script_executed(self):
+        super().after_script_executed()
+        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
+        folder_path = self.file_path
+        self.file_path = filename
+        log.info(f'Zipping {self.key} to {filename}')
+        self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
+        log.info(f'Zip file created {self.file_path}')
+        self.generate_download_link = True

@@ -11,7 +11,7 @@ def cli(debug):
 @cli.command()
 def simple_no_params_command():
     'Help text'
-    click.echo(f"Simpel noparams command called")
+    click.echo("Simpel noparams command called")
 
 
 @cli.group()
@@ -23,7 +23,7 @@ def sub_group():
 @sub_group.command()
 def a_sub_group_command():
     'Help for sub_group.sub_group_command '
-    click.echo(f"Sub group command called")
+    click.echo("Sub group command called")
 
 
 @cli.command()
@@ -31,7 +31,7 @@ def a_sub_group_command():
 @click.argument("an-argument", default=10, type=int)
 def command_with_option_and_argument(an_argument, an_option):
     'Help text'
-    click.echo(f"Ran command with option: {an_option} argument {an_argument}")
+    click.echo("Ran command with option: {} argument {}".format(an_option, an_argument))
 
 
 @cli.command()

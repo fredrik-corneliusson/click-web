@@ -8,6 +8,10 @@ Serve click scripts over the web with minimal effort.
 Usage
 -----
 
+See this demo `screen capture`_.
+
+.. _screen capture: https://github.com/fredrik-corneliusson/click-web/raw/master/doc/click-web-demo.gif
+
 Take an existing click script, like this one:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

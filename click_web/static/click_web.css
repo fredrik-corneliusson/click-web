@@ -38,3 +38,30 @@ h1 {
 input[type=number] {
     font-family: monospace;
 }
+
+.back-links {
+    display: block;
+    margin-bottom: 1em;
+    float: right;
+}
+
+.command-line {
+    display: block;
+    unicode-bidi: embed;
+    font-family: monospace;
+    white-space: pre;
+    margin-bottom: 1em;
+    overflow: hidden;
+}
+
+.script-output {
+    border: 3px;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.30);;
+    display: block;
+    unicode-bidi: embed;
+    font-family: monospace;
+    white-space: pre;
+    margin-bottom: 1em;
+    padding: 5px;
+}

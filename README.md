@@ -47,6 +47,14 @@ export FLASK_ENV=development
 export FLASK_APP=app.py
 flask run
 ```
- 
+
+# Unsupported click features
+It has only been tested with basic click features,
+and most advanced features will probably not work.
+
+* Variadic Arguments (will need some JS on client side)
+* Promts (probably never will)
+* Custom ParamTypes (depending on implementation)
+
 # TODO
 * Abort started/running processes.

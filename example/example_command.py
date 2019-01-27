@@ -53,7 +53,7 @@ def nargs_test(user, blubb, email):
     click.echo(f"Hi {user}, blubb flag is {blubb} and emails sent in is: {email}")
 
 
-@cli.group()
+@sub.group()
 def sub2():
     'subgrupp'
 
@@ -64,12 +64,12 @@ def sub2():
 @click.argument("user", default="bode")
 def a_nested_sub_command(user, debug, email):
     "2:nd level sub command"
-    click.echo(f"Hi {user}, debug set to {debug} and email: {email}")
+    click.echo(f"Hi {user}, global debug is {DEBUG} and local debug is {debug} and email: {email}")
 
 
 @cli.group()
 def file_handling():
-    'Commands to test file and folder handling'
+    "Commands to test file and folder handling"
 
 
 @file_handling.command()
@@ -124,6 +124,19 @@ def process_output_folder(folder):
         out.write(f"This was written by process_output_folder {datetime.now()}")
 
 
+@file_handling.command()
+@click.argument('input_folder', type=click.Path(exists=True))
+@click.argument('out_folder', type=click.Path())
+def process_input_output_folder(input_folder, out_folder):
+    "Process a input folder and produce output folder"
+    click.echo(click.format_filename(input_folder))
+    all_files = Path(input_folder).rglob("*")
+    click.echo('\n'.join(str(f) for f in all_files))
+    out_file = (Path(out_folder) / 'out_file.txt')
+    with open(out_file, 'w') as out:
+        out.write(f"This was written by process_output_folder {datetime.now()}")
+
+
 def add_external_command(USE_MULTI_COMMAND=False):
     """
     Shows an example of how to add external click commands from other modules
@@ -145,9 +158,6 @@ def add_external_command(USE_MULTI_COMMAND=False):
     if USE_MULTI_COMMAND:
         # Using CommandCollection will work but you will loose the group level options
         cli = click.CommandCollection(name='A multi command example', sources=[cli, flask_cli])
-    else:
-        # adding command or group to existing hierarchy
-        cli.add_command(flask_cli)
 
 
 add_external_command(False)

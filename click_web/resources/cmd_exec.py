@@ -3,12 +3,11 @@ import os
 import shutil
 import sys
 import tempfile
-import zipfile
 from html import escape
 from pathlib import Path
 from typing import List
 
-from flask import request, Response
+from flask import request, Response, url_for
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -18,6 +17,17 @@ import subprocess
 from .input_fields import separator
 
 log = None
+
+HTML_HEAD = '''<!doctype html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{pure_css_location}"/>
+    <link rel="stylesheet" href="{click_web_css_location}"/>
+</head>
+<body>'''
+HTML_TAIL = '''
+</body>
+'''
 
 
 def exec(command_path):
@@ -39,7 +49,23 @@ def exec(command_path):
         cmd.append(command)
         cmd.extend(req_to_args.command_args(i + 1))
 
-    return Response(_run_script_and_generate_stream(req_to_args, cmd), mimetype='text/html')
+    index_location = url_for('.index')
+    current_location = request.path
+    pure_css_location = url_for('static', filename='pure.css')
+    click_web_css_location = url_for('static', filename='click_web.css')
+
+    def _generate_output():
+        yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
+        yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
+               f'<a href="{current_location}">[{current_location}]</a></div>')
+        yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
+        yield '<pre class="script-output">'
+        yield from _run_script_and_generate_stream(req_to_args, cmd)
+        yield '</pre>'
+        yield from _create_result_footer(req_to_args)
+        yield HTML_TAIL
+
+    return Response(_generate_output(), mimetype='text/html')
 
 
 def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: List[str]):
@@ -55,32 +81,29 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
 
     encoding = locale.getpreferredencoding(False)
 
-    yield '<pre>'
     with process.stdout:
         for line in iter(process.stdout.readline, b''):
             yield escape(line.decode(encoding))
     process.wait()  # wait for the subprocess to exit
-    yield '</pre>'
-
+    log.info('script finished Pid: %d', process.pid)
     for fi in req_to_args.field_infos:
         fi.after_script_executed()
 
+
+def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link]
     if to_download:
         yield '<b>Result files:</b><br>'
+        for fi in to_download:
+            yield '<ul> '
+            yield f'<li>{_build_relative_link(fi)}<br>'
+            yield '</ul>'
     else:
-        yield '<b>Done!</b><br><br>'
-
-    for fi in to_download:
-        yield '<ul> '
-        yield f'<li>{_build_relative_link(fi)}<br>'
-        yield '</ul>'
-
-    log.info('script finished Pid: %d', process.pid)
+        yield 'DONE'
 
 
 def _build_relative_link(field_info):
-    """Hack as url_for needed SERVER_NAME config set"""
+    """Hack as url_for needed request context"""
 
     rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
     uri = f'/static/results/{rel_file_path.as_posix()}'
@@ -90,7 +113,9 @@ def _build_relative_link(field_info):
 class RequestToCommandArgs:
 
     def __init__(self):
-        self.field_infos = [FieldInfo.factory(key) for key in list(request.form.keys()) + list(request.files.keys())]
+        field_infos = [FieldInfo.factory(key) for key in list(request.form.keys()) + list(request.files.keys())]
+        # important to sort them so they will be in expected order on command line
+        self.field_infos = list(sorted(field_infos))
 
     def command_args(self, command_index) -> List[str]:
         """
@@ -283,20 +308,18 @@ class FieldPathInfo(FieldFileInfo):
 
     def save(self):
         super().save()
-        zip_ref = zipfile.ZipFile(self.file_path, 'r')
         zip_extract_dir = tempfile.mkdtemp(dir=self.temp_dir())
 
         log.info(f'Extracting: {self.file_path} to {zip_extract_dir}')
+        shutil.unpack_archive(self.file_path, zip_extract_dir, 'zip')
         self.file_path = zip_extract_dir
-
-        zip_ref.extractall(zip_extract_dir)
-        zip_ref.close()
 
     def after_script_executed(self):
         super().after_script_executed()
         fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
         folder_path = self.file_path
         self.file_path = filename
+
         log.info(f'Zipping {self.key} to {filename}')
         self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
         log.info(f'Zip file created {self.file_path}')

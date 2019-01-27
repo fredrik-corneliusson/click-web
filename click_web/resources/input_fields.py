@@ -128,23 +128,13 @@ class FloatInput(BaseInput):
         return type_attrs
 
 
-class FileInput(BaseInput):
-    param_type_cls = click.File
-
-    @property
-    def type_attrs(self):
-        type_attrs = {}
-        type_attrs['click_type'] = f'file[{self.param.type.mode}]'
-        if 'r' not in self.param.type.mode:
-            # if file is only for output do not show in form
-            type_attrs['type'] = 'hidden'
-        else:
-            type_attrs['type'] = 'file'
-        return type_attrs
-
-
 class FolderInput(BaseInput):
-    param_type_cls = click.Path
+
+    def is_supported(self):
+        if isinstance(self.param.type, click.Path):
+            if self.param.type.dir_okay:
+                return True
+        return False
 
     @property
     def type_attrs(self):
@@ -161,6 +151,35 @@ class FolderInput(BaseInput):
         return type_attrs
 
 
+class FileInput(BaseInput):
+
+    def is_supported(self):
+        if isinstance(self.param.type, click.File):
+            return True
+        elif isinstance(self.param.type, click.Path):
+            if (self.param.type.file_okay):
+                return True
+        return False
+
+    @property
+    def type_attrs(self):
+        type_attrs = {}
+        if isinstance(self.param.type, click.File):
+            mode = self.param.type.mode
+        else:
+            # TODO: figure out
+            mode = 'r'
+
+        type_attrs['click_type'] = f'file[{mode}]'
+
+        if 'r' not in mode:
+            # if file is only for output do not show in form
+            type_attrs['type'] = 'hidden'
+        else:
+            type_attrs['type'] = 'file'
+        return type_attrs
+
+
 class DefaultInput(BaseInput):
     param_type_cls = click.ParamType
 
@@ -172,7 +191,14 @@ class DefaultInput(BaseInput):
         return type_attrs
 
 
-INPUT_TYPES = [ChoiceInput, FlagInput, IntInput, FloatInput, FileInput, FolderInput, DefaultInput]
+'The types of inputs we support form inputs for and the priority order.'
+INPUT_TYPES = [ChoiceInput,
+               FlagInput,
+               IntInput,
+               FloatInput,
+               FolderInput,
+               FileInput,
+               DefaultInput]
 
 
 def get_input_field(ctx: click.Context, param: click.Parameter, command_index, param_index) -> dict:

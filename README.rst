@@ -5,13 +5,13 @@ Serve click scripts over the web with minimal effort.
 
 *Caution*: No security (login etc.), do not serve scripts publicly.
 
-usage
+Usage
 -----
 
 Take an existing click script, like this one:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``test_command.py``
+``example_command.py``
 
 ::
 
@@ -27,10 +27,10 @@ Take an existing click script, like this one:
    @click.option("--delay", type=float, default=0.01, help='delay for every line print')
    @click.argument("lines", default=10, type=int)
    def print_rows(lines, delay):
-       'Prints lines with a delay'
+       'Print lines with a delay'
        click.echo(f"writing: {lines} with {delay}")
        for i in range(lines):
-           click.echo("hejsan rad: {}".format(i))
+           click.echo(f"Hello row: {i}")
            time.sleep(delay)
 
    if __name__ == '__main__':
@@ -44,7 +44,7 @@ Create a minimal script to run with flask
 ::
 
    from click_web import create_click_web_app
-   from example import example_command
+   import example_command
 
    app = create_click_web_app(example_command, example_command.cli)
 

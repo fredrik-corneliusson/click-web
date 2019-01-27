@@ -1,4 +1,0 @@
-Click>=7.0
-Flask>=1.0
-Jinja2>=2.10
-pytest>=4.1

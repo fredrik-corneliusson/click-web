@@ -27,7 +27,8 @@ def _click_to_tree(ctx: click.Context, node: click.BaseCommand, parents=[]):
             res_childs.append(_click_to_tree(ctx, child, parents[:] + [node, ]))
 
     res['name'] = node.name
-    res['help'] = node.get_short_help_str()
+    res['short_help'] = node.get_short_help_str()
+    res['help'] = node.help
     path_parts = parents + [node]
     res['path'] = '/' + '/'.join(p.name for p in path_parts)
     if res_childs:

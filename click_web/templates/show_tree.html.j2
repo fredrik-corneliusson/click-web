@@ -13,7 +13,8 @@
         {%- for command in tree.childs recursive %}
             <li>
                 {% if not command.is_group %}
-                    <a href="{{ command.path }}">{{ command.name }}</a> &ndash; {{ command.help }}
+                    <a title= "{{ command.help }}"
+                       href="{{ command.path }}">{{ command.name }}</a> &ndash; {{ command.short_help }}
                 {% else %}
                     {{ command.name }} &ndash; {{ command.help }}
                 {% endif %}

@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 SHORT_DESCRIPTION = 'Serve click scripts over the web with minimal effort.'
 
-# Use the README.md as the long description
-with open('README.md') as f:
+# Use the README as the long description
+with open('README.rst') as f:
     LONG_DESCRIPTION = f.read()
 
 requirements = [
@@ -21,7 +21,7 @@ testing_requirements = [
 
 setup(
     name='click-web',
-    version='0.1.0',
+    version='0.5.0',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',

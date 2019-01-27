@@ -73,7 +73,7 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
     Execute the command the via Popen and yield output
     """
     log.info('Executing: %s', cmd)
-    process = subprocess.Popen(cmd, shell=True,
+    process = subprocess.Popen(cmd, shell=False,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
                                bufsize=1)

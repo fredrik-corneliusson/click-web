@@ -56,7 +56,7 @@ def create_click_web_app(module, command: click.BaseCommand):
     _flask_app.add_url_rule('/<path:command_path>', 'command_execute', click_web.resources.cmd_exec.exec,
                             methods=['POST'])
 
-    _flask_app.logger.info('OUTPUT_FOLDER: {OUTPUT_FOLDER}'.format(OUTPUT_FOLDER=OUTPUT_FOLDER))
+    _flask_app.logger.info(f'OUTPUT_FOLDER: {OUTPUT_FOLDER}')
     results_blueprint = Blueprint('results', __name__, static_url_path='/static/results', static_folder=OUTPUT_FOLDER)
     _flask_app.register_blueprint(results_blueprint)
 

@@ -142,7 +142,7 @@ class FolderInput(BaseInput):
         # if it is required we treat it as an input folder
         # and only accept zip.
         mode = 'r' if self.param.type.exists else 'w'
-        type_attrs['click_type'] = 'path[{}]'.format(mode)
+        type_attrs['click_type'] = f'path[{mode}]'
         if self.param.type.exists:
             type_attrs['accept'] = "application/zip"
             type_attrs['type'] = 'file'
@@ -170,7 +170,7 @@ class FileInput(BaseInput):
             # TODO: figure out
             mode = 'r'
 
-        type_attrs['click_type'] = 'file[{}]'.format(mode)
+        type_attrs['click_type'] = f'file[{mode}]'
 
         if 'r' not in mode:
             # if file is only for output do not show in form
@@ -214,4 +214,4 @@ def get_input_field(ctx: click.Context, param: click.Parameter, command_index, p
         else:
             fields = input_type.fields
             return fields
-    raise NotSupported('No Form input type not supported: {}'.format(param))
+    raise NotSupported(f"No Form input type not supported: {param}")

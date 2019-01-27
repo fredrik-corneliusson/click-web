@@ -56,8 +56,8 @@ def exec(command_path):
 
     def _generate_output():
         yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
-        yield '<div class="back-links">Back to <a href="{}">[index]</a>&nbsp;&nbsp;'.format(index_location)
-        yield '<a href="{0}">[{0}]</a></div>'.format(current_location)
+        yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
+               f'<a href="{current_location}">[{current_location}]</a></div>')
         yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
         yield '<pre class="script-output">'
         yield from _run_script_and_generate_stream(req_to_args, cmd)
@@ -96,7 +96,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
         yield '<b>Result files:</b><br>'
         for fi in to_download:
             yield '<ul> '
-            yield '<li>{}<br>'.format(_build_relative_link(fi))
+            yield f'<li>{_build_relative_link(fi)}<br>'
             yield '</ul>'
     else:
         yield 'DONE'
@@ -106,8 +106,8 @@ def _build_relative_link(field_info):
     """Hack as url_for needed request context"""
 
     rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
-    uri = '/static/results/{}'.format(rel_file_path.as_posix())
-    return '<a href="{}">{}</a>'.format(uri, field_info.cmd_opt)
+    uri = f'/static/results/{rel_file_path.as_posix()}'
+    return f'<a href="{uri}">{field_info.cmd_opt}</a>'
 
 
 class RequestToCommandArgs:
@@ -219,12 +219,12 @@ class FieldInfo:
 
     def __str__(self):
         res = []
-        res.append('key: {}'.format(self.key))
-        res.append('key_cmd_index: {}'.format(self.cmd_index))
-        res.append('parameter_index: {}'.format(self.parameter_index))
-        res.append('option_type: {}'.format(self.option_type))
-        res.append('type: {}'.format(self.type))
-        res.append('cmd_opt: {}'.format(self.cmd_opt))
+        res.append(f'key: {self.key}')
+        res.append(f'key_cmd_index: {self.cmd_index}')
+        res.append(f'parameter_index: {self.parameter_index}')
+        res.append(f'option_type: {self.option_type}')
+        res.append(f'type: {self.type}')
+        res.append(f'cmd_opt: {self.cmd_opt}')
         return ', '.join(res)
 
     def __lt__(self, other):
@@ -250,14 +250,14 @@ class FieldFileInfo(FieldInfo):
         self.mode = mode[:-1]
         self.generate_download_link = True if 'w' in self.mode else False
 
-        log.info('File mode for {} is  {}'.format(self.key, mode))
+        log.info(f'File mode for {self.key} is  {mode}')
         self.save()
 
     @classmethod
     def temp_dir(cls):
         if not cls._temp_dir:
             cls._temp_dir = tempfile.mkdtemp(dir=click_web.OUTPUT_FOLDER)
-        log.info('Temp dir: {}'.format(cls._temp_dir))
+        log.info(f'Temp dir: {cls._temp_dir}')
         return cls._temp_dir
 
     def save(self):
@@ -275,13 +275,13 @@ class FieldFileInfo(FieldInfo):
 
             fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name, suffix=suffix)
             self.file_path = filename
-            log.info('Saving {} to {}'.format(self.key, filename))
+            log.info(f'Saving {self.key} to {filename}')
             file.save(filename)
 
     def __str__(self):
 
         res = [super().__str__()]
-        res.append('file_path: {}'.format(self.file_path))
+        res.append(f'file_path: {self.file_path}')
         return ', '.join(res)
 
 
@@ -295,7 +295,7 @@ class FieldOutFileInfo(FieldFileInfo):
         name = secure_filename(self.key)
 
         fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name)
-        log.info('Creating empty file for {} as {}'.format(self.key, filename))
+        log.info(f'Creating empty file for {self.key} as {filename}')
         self.file_path = filename
 
 
@@ -310,7 +310,7 @@ class FieldPathInfo(FieldFileInfo):
         super().save()
         zip_extract_dir = tempfile.mkdtemp(dir=self.temp_dir())
 
-        log.info('Extracting: {} to {}'.format(self.file_path, zip_extract_dir))
+        log.info(f'Extracting: {self.file_path} to {zip_extract_dir}')
         shutil.unpack_archive(self.file_path, zip_extract_dir, 'zip')
         self.file_path = zip_extract_dir
 
@@ -320,9 +320,9 @@ class FieldPathInfo(FieldFileInfo):
         folder_path = self.file_path
         self.file_path = filename
 
-        log.info('Zipping {} to {}'.format(self.key, filename))
+        log.info(f'Zipping {self.key} to {filename}')
         self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
-        log.info('Zip file created {}'.format(self.file_path))
+        log.info(f'Zip file created {self.file_path}')
         self.generate_download_link = True
 
 
@@ -342,7 +342,7 @@ class FieldPathOutInfo(FieldOutFileInfo):
         fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
         folder_path = self.file_path
         self.file_path = filename
-        log.info('Zipping {} to {}'.format(self.key, filename))
+        log.info(f'Zipping {self.key} to {filename}')
         self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
-        log.info('Zip file created {}'.format(self.file_path))
+        log.info(f'Zip file created {self.file_path}')
         self.generate_download_link = True

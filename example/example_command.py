@@ -23,10 +23,10 @@ def cli(debug):
 def print_lines(lines, message, delay):
     "Just print lines with delay (demonstrates the output streaming to browser)"
     if DEBUG:
-        click.echo('global debug set, printing some debug output')
-    click.echo('writing: {} lines with delay {}s'.format(lines, delay))
+        click.echo("global debug set, printing some debug output")
+    click.echo(f"writing: {lines} lines with delay {delay}s")
     for i in range(lines):
-        click.echo('{} rad: {}'.format(message, i))
+        click.echo(f"{message} rad: {i}")
         time.sleep(delay)
 
 
@@ -36,7 +36,7 @@ def print_lines(lines, message, delay):
 @click.argument("user", default="bode")
 def simple_command(user, email, number=None):
     "Command with text and number inputs"
-    click.echo('Hi {}, your email was set to: {} and number is: {}'.format(user, email, number))
+    click.echo(f"Hi {user}, your email was set to: {email} and number is: {number}")
 
 
 @cli.group()
@@ -50,7 +50,7 @@ def sub():
 @click.argument("user", default="johnny bode")
 def nargs_test(user, blubb, email):
     "Command with nargs option"
-    click.echo('Hi {}, blubb flag is {} and emails sent in is: {}'.format(user, blubb, email))
+    click.echo(f"Hi {user}, blubb flag is {blubb} and emails sent in is: {email}")
 
 
 @sub.group()
@@ -64,8 +64,7 @@ def sub2():
 @click.argument("user", default="bode")
 def a_nested_sub_command(user, debug, email):
     "2:nd level sub command"
-    click.echo('Hi {}, global debug is {} and local debug is {} and email: {}'
-               .format(user, DEBUG, debug, email))
+    click.echo(f"Hi {user}, global debug is {DEBUG} and local debug is {debug} and email: {email}")
 
 
 @cli.group()
@@ -80,7 +79,7 @@ def process_optional_file(input: click.File):
     if input is None:
         click.echo("no input file given")
     while True:
-        click.echo("Reading from {}...".format(input.name))
+        click.echo(f"Reading from {input.name}...")
         chunk = input.read(2048)
         if not chunk:
             break
@@ -95,11 +94,11 @@ def process_input_file(input: click.File, output: click.File):
     if DEBUG:
         click.echo("global debug set, printing some debug output")
     while True:
-        click.echo("Reading from {}...".format(input.name))
+        click.echo(f"Reading from {input.name}...")
         chunk = input.read(2048)
         if not chunk:
             break
-        click.echo("Writing to {}...".format(output.name))
+        click.echo(f"Writing to {output.name}...")
 
         chunk = chunk.upper()
         output.write(chunk)
@@ -122,7 +121,7 @@ def process_output_folder(folder):
     click.echo(click.format_filename(folder))
     out_file = (Path(folder) / 'out_file.txt')
     with open(out_file, 'w') as out:
-        out.write("This was written by process_output_folder {}".format(datetime.now()))
+        out.write(f"This was written by process_output_folder {datetime.now()}")
 
 
 @file_handling.command()
@@ -135,7 +134,7 @@ def process_input_output_folder(input_folder, out_folder):
     click.echo('\n'.join(str(f) for f in all_files))
     out_file = (Path(out_folder) / 'out_file.txt')
     with open(out_file, 'w') as out:
-        out.write("This was written by process_output_folder {}".format(datetime.now()))
+        out.write(f"This was written by process_output_folder {datetime.now()}")
 
 
 def add_external_command(USE_MULTI_COMMAND=False):

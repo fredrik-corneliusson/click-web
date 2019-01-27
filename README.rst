@@ -3,8 +3,7 @@ click-web
 
 Serve click scripts over the web with minimal effort.
 
-*Caution*: No security (login etc.), do not serve dangours scripts
-publicly.
+*Caution*: No security (login etc.), do not serve scripts publicly.
 
 usage
 -----

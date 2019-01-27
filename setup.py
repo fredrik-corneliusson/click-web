@@ -42,6 +42,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Topic :: Software Development :: User Interfaces',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: System :: Shells',
         'Topic :: Utilities',
         'Programming Language :: Python',

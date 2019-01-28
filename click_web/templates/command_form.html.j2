@@ -36,14 +36,15 @@
                                        type="{{ field.type }}"
                                         {% if field.step %} step="{{ field.step }}"{% endif %}
                                         {% if field.accept %} accept="{{ field.accept }}"{% endif %}
-                                       value="{{ field.value }}"
+                                       value="{{ field.value|default('', true) }}"
                                         {{ field.checked }}
                                         {{ 'required' if field.required else '' }}
 
 
                                 >
                             {% endif %}
-                            <div class="help" style="display: inline-block">{{ field.desc|capitalize }}</div>
+                            <div class="help" style="display: inline-block">
+                                {{ field.desc|default('', true)|capitalize }}</div>
                         {% endfor %}
                     </div>
                 </div>

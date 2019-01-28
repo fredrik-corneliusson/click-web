@@ -39,6 +39,14 @@ def simple_command(user, email, number=None):
     click.echo(f"Hi {user}, your email was set to: {email} and number is: {number}")
 
 
+@cli.command()
+@click.option("--someopt", help='the email for user')
+@click.argument("user")
+def simple_command_missing_default_value(user, someopt=None):
+    "Command with text and number inputs"
+    click.echo(f"Hi {user}, option was set to: {someopt}")
+
+
 @cli.group()
 def sub():
     'A sub group'

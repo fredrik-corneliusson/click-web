@@ -8,6 +8,7 @@ import click_web
 import click_web.resources.cmd_form
 import click_web.resources.input_fields
 from click_web.resources.cmd_form import _generate_form_data
+from tests.fixtures.script.a_script import ACustomParamType
 
 
 def test_register(cli, loaded_script_module):
@@ -143,6 +144,54 @@ def test_get_input_field(ctx, cli, param, expected, command_index):
           'value': ''}),
     ])
 def test_get_file_input_field(ctx, cli, param, expected, command_index):
+    res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
+    pprint.pprint(res)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    'param, command_index, expected',
+    [
+        (click.Argument(["an_argument", ], type=ACustomParamType()), 0,
+         {'checked': '',
+          'click_type': 'my_click_custom_type',
+          'help': '',
+          'human_readable_name': 'AN ARGUMENT',
+          'name': '0.0.argument.my_click_custom_type.an-argument',
+          'nargs': 1,
+          'param': 'argument',
+          'required': True,
+          'type': 'my_custom_type',
+          'value': None}),
+        (click.Option(["--an_option", ], type=ACustomParamType()), 0,
+         {'checked': '',
+          'click_type': 'my_click_custom_type',
+          'desc': None,
+          'help': ('--an_option MY_CUSTOM_TYPE', ''),
+          'human_readable_name': 'an option',
+          'name': '0.0.option.my_click_custom_type.--an-option',
+          'nargs': 1,
+          'param': 'option',
+          'required': False,
+          'type': 'my_custom_type',
+          'value': ''}),
+    ])
+def test_get_custom_input_field_type(ctx, cli, param, expected, command_index):
+    # define a Input type for a custom click type
+    class CustomInput(click_web.resources.input_fields.BaseInput):
+        param_type_cls = ACustomParamType
+
+        @property
+        def type_attrs(self):
+            type_attrs = {}
+            type_attrs['type'] = 'my_custom_type'
+            type_attrs['click_type'] = 'my_click_custom_type'
+            return type_attrs
+
+    # Register it to the list of supported types.
+    # Add it first as we there already is a input type that matches.
+    click_web.resources.input_fields.INPUT_TYPES.append(CustomInput)
+
     res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
     pprint.pprint(res)
     assert res == expected

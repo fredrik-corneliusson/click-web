@@ -4,6 +4,8 @@ from pathlib import Path
 import click
 import time
 
+from click_web.web_click_types import EMAIL_TYPE
+
 DEBUG = False
 
 
@@ -31,7 +33,7 @@ def print_lines(lines, message, delay):
 
 
 @cli.command()
-@click.option("--email", help='the email for user')
+@click.option("--email", type=EMAIL_TYPE, help='the email for user')
 @click.option("--number", type=int, help='a number')
 @click.argument("user", default="bode")
 def simple_command(user, email, number=None):
@@ -54,7 +56,7 @@ def sub():
 
 @sub.command()
 @click.option("--blubb/--no-blubb", help='set blubb flag')
-@click.option("--email", help='the email for user', default='some@thing.xyz', nargs=2)
+@click.option("--email", type=EMAIL_TYPE, help='the email for user', default='some@thing.xyz', nargs=2)
 @click.argument("user", default="johnny bode")
 def nargs_test(user, blubb, email):
     "Command with nargs option"

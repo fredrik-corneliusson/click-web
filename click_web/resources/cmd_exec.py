@@ -7,7 +7,7 @@ from html import escape
 from pathlib import Path
 from typing import List
 
-from flask import request, Response, url_for
+from flask import request, Response
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -17,17 +17,6 @@ import subprocess
 from .input_fields import separator
 
 log = None
-
-HTML_HEAD = '''<!doctype html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="{pure_css_location}"/>
-    <link rel="stylesheet" href="{click_web_css_location}"/>
-</head>
-<body>'''
-HTML_TAIL = '''
-</body>
-'''
 
 
 def exec(command_path):
@@ -49,9 +38,6 @@ def exec(command_path):
         cmd.append(command)
         cmd.extend(req_to_args.command_args(i + 1))
 
-    pure_css_location = url_for('static', filename='pure.css')
-    click_web_css_location = url_for('static', filename='click_web.css')
-
     def _generate_output():
         # yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
         yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
@@ -59,7 +45,6 @@ def exec(command_path):
         yield from _run_script_and_generate_stream(req_to_args, cmd)
         yield '</pre>'
         yield from _create_result_footer(req_to_args)
-        yield HTML_TAIL
 
     return Response(_generate_output(), mimetype='text/html')
 

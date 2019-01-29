@@ -1,6 +1,7 @@
 import click
 
 from click_web import exceptions
+from click_web.web_click_types import EmailParamType
 
 separator = '.'
 
@@ -180,6 +181,17 @@ class FileInput(BaseInput):
         return type_attrs
 
 
+class EmailInput(BaseInput):
+    param_type_cls = EmailParamType
+
+    @property
+    def type_attrs(self):
+        type_attrs = {}
+        type_attrs['type'] = 'email'
+        type_attrs['click_type'] = 'email'
+        return type_attrs
+
+
 class DefaultInput(BaseInput):
     param_type_cls = click.ParamType
 
@@ -191,22 +203,26 @@ class DefaultInput(BaseInput):
         return type_attrs
 
 
-'The types of inputs we support form inputs for and the priority order.'
+'''
+The types of inputs we support form inputs listed in priority order (first that matches will be selected).
+To add new Input handling for html forms for custom Parameter types just Subclass BaseInput and insert
+the class in the list.
+'''
 INPUT_TYPES = [ChoiceInput,
                FlagInput,
                IntInput,
                FloatInput,
                FolderInput,
-               FileInput,
-               DefaultInput]
+               FileInput]
+
+_DEFAULT_INPUT = [DefaultInput]
 
 
 def get_input_field(ctx: click.Context, param: click.Parameter, command_index, param_index) -> dict:
     """
     Convert a click.Parameter into a dict structure describing a html form option
     """
-    # TODO: File and directory uploads (folders can be uploaded zipped and then unzipped in safe temp dir).
-    for input_cls in INPUT_TYPES:
+    for input_cls in INPUT_TYPES + _DEFAULT_INPUT:
         try:
             input_type = input_cls(ctx, param, command_index, param_index)
         except NotSupported:

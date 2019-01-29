@@ -5,16 +5,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='pure.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
     <script src="{{ url_for('static', filename='post_and_read.js') }}"></script>
+    <script>
+        // Note: must be full url to work on Firefox
+        const command_url = window.location.href;
+    </script>
 </head>
 <body>
 <a href="/">Back to index</a>
 <h1>{{ command.name|title }}</h1>
 <div class="command-help">{{ command.help|capitalize }}</div>
 
-<form action="/{{ command_path }}"
-      id="inputform"
-      onsubmit="return post_and_read();"
+<form id="inputform"
       method="post"
+      onsubmit="return post_and_read();"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
     {% for level in levels %}
@@ -56,6 +59,6 @@
     {% endfor %}
     <button type="submit" class="pure-button pure-button-primary">Run</button>
 </form>
-<div class="output" id="output">the output</div>
+<div class="output" id="output"></div>
 </body>
 </html>

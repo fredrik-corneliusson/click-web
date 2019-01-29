@@ -46,5 +46,22 @@ def command_with_output_folder(folder):
     click.echo(click.format_filename(folder))
 
 
+class ACustomParamType(click.ParamType):
+    """Just a stupid custom param type"""
+    name = 'my_custom_type'
+
+    def convert(self, value, param, ctx):
+        if value.lower() == 'spamspam':
+            return value
+        else:
+            self.fail(f'{value} is not valid', param, ctx)
+
+
+@cli.command()
+@click.argument('email', type=ACustomParamType())
+def command_with_custom_email_type(email):
+    click.echo(f'{email} is valid.')
+
+
 if __name__ == '__main__':
     cli()

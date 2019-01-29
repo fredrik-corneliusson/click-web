@@ -4,6 +4,7 @@
     <title>{{ command.name|title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='pure.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
+    <script src="{{ url_for('static', filename='post_and_read.js') }}"></script>
 </head>
 <body>
 <a href="/">Back to index</a>
@@ -11,6 +12,8 @@
 <div class="command-help">{{ command.help|capitalize }}</div>
 
 <form action="/{{ command_path }}"
+      id="inputform"
+      onsubmit="return post_and_read();"
       method="post"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
@@ -52,7 +55,7 @@
         </fieldset>
     {% endfor %}
     <button type="submit" class="pure-button pure-button-primary">Run</button>
-    {#    <input type="submit" value="Submit" >#}
 </form>
+<div class="output" id="output">the output</div>
 </body>
 </html>

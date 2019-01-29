@@ -49,15 +49,11 @@ def exec(command_path):
         cmd.append(command)
         cmd.extend(req_to_args.command_args(i + 1))
 
-    index_location = url_for('.index')
-    current_location = request.path
     pure_css_location = url_for('static', filename='pure.css')
     click_web_css_location = url_for('static', filename='click_web.css')
 
     def _generate_output():
-        yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
-        yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
-               f'<a href="{current_location}">[{current_location}]</a></div>')
+        # yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
         yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
         yield '<pre class="script-output">'
         yield from _run_script_and_generate_stream(req_to_args, cmd)

@@ -7,7 +7,7 @@ from html import escape
 from pathlib import Path
 from typing import List
 
-from flask import request, Response
+from flask import request, Response, url_for
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -17,6 +17,17 @@ import subprocess
 from .input_fields import separator
 
 log = None
+
+HTML_HEAD = '''<!doctype html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{pure_css_location}"/>
+    <link rel="stylesheet" href="{click_web_css_location}"/>
+</head>
+<body>'''
+HTML_TAIL = '''
+</body>
+'''
 
 
 def exec(command_path):
@@ -38,15 +49,29 @@ def exec(command_path):
         cmd.append(command)
         cmd.extend(req_to_args.command_args(i + 1))
 
-    def _generate_output():
-        # yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
-        yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
-        yield '<pre class="script-output">'
-        yield from _run_script_and_generate_stream(req_to_args, cmd)
-        yield '</pre>'
-        yield from _create_result_footer(req_to_args)
+    index_location = url_for('.index')
+    current_location = request.path
+    pure_css_location = url_for('static', filename='pure.css')
+    click_web_css_location = url_for('static', filename='click_web.css')
+    text_only = 'text/plain' in request.accept_mimetypes.values()
 
-    return Response(_generate_output(), mimetype='text/html')
+    def _generate_output(use_html: bool):
+        if use_html:
+            yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
+            yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
+                   f'<a href="{current_location}">[{current_location}]</a></div>')
+        yield _create_cmd_header(commands)
+        if use_html:
+            yield '<pre class="script-output">'
+        yield from _run_script_and_generate_stream(req_to_args, cmd)
+        if use_html:
+            yield '</pre>'
+        yield from _create_result_footer(req_to_args)
+        if use_html:
+            yield HTML_TAIL
+
+    return Response(_generate_output(use_html=not text_only),
+                    mimetype='text/plain' if text_only else 'text/html')
 
 
 def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: List[str]):
@@ -70,17 +95,47 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
     for fi in req_to_args.field_infos:
         fi.after_script_executed()
 
+def _create_cmd_header(commands: List[str]):
+    """
+    Generate a command header.
+    Note:
+        here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
+        This way the JS text readed knows this chunk will be special when inserting into DOM.
+    """
+    def generate():
+        yield '<!-- CLICK_WEB START HEADER -->'
+        yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
+        yield '<!-- CLICK_WEB END HEADER -->'
+
+    # important yield this block as one string so it pushed to client in one go.
+    # so the whole block can be treated as html.
+    html_str = '\n'.join(generate())
+    return html_str
 
 def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
+    """
+    Generate a footer.
+    Note:
+        here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
+        This way the JS text readed knows this chunk will be special when inserting into DOM.
+    """
     to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link]
+    # important yield this block as one string so it pushed to client in one go.
+    # so the whole block can be treated as html.
+    lines = []
+    lines.append('<!-- CLICK_WEB START FOOTER -->')
     if to_download:
-        yield '<b>Result files:</b><br>'
-        for fi in to_download:
-            yield '<ul> '
-            yield f'<li>{_build_relative_link(fi)}<br>'
-            yield '</ul>'
+            lines.append('<b>Result files:</b><br>')
+            for fi in to_download:
+                lines.append('<ul> ')
+                lines.append(f'<li>{_build_relative_link(fi)}<br>')
+                lines.append('</ul>')
+
     else:
-        yield 'DONE'
+        lines.append('<b>DONE</b>')
+    lines.append('<!-- CLICK_WEB END FOOTER -->')
+    html_str = '\n'.join(lines)
+    yield html_str
 
 
 def _build_relative_link(field_info):

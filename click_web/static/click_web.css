@@ -59,9 +59,10 @@ input[type=number] {
     border-style: dashed;
     border-color: rgba(0, 0, 0, 0.30);;
     display: block;
+    width: fit-content;
     unicode-bidi: embed;
     font-family: monospace;
     white-space: pre;
     margin-bottom: 1em;
-    padding: 5px;
+    padding: 7px;
 }

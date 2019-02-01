@@ -17,7 +17,7 @@
 
 <form id="inputform"
       method="post"
-      onsubmit="return post_and_read();"
+      onsubmit="return postAndRead();"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
     {% for level in levels %}
@@ -57,7 +57,7 @@
             {% endfor %}
         </fieldset>
     {% endfor %}
-    <button type="submit" class="pure-button pure-button-primary">Run</button>
+    <button type="submit" id="submit_btn" class="pure-button pure-button-primary">Run</button>
 </form>
 
 <div id="output-header" hidden="true"></div>

@@ -213,7 +213,8 @@ INPUT_TYPES = [ChoiceInput,
                IntInput,
                FloatInput,
                FolderInput,
-               FileInput]
+               FileInput,
+               EmailInput]
 
 _DEFAULT_INPUT = [DefaultInput]
 

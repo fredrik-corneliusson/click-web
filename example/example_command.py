@@ -28,7 +28,7 @@ def print_lines(lines, message, delay):
         click.echo("global debug set, printing some debug output")
     click.echo(f"writing: {lines} lines with delay {delay}s")
     for i in range(lines):
-        click.echo(f"{message} rad: {i}")
+        click.echo(f"{message} row: {i}")
         time.sleep(delay)
 
 

@@ -1,4 +1,5 @@
 let REQUEST_RUNNING = false;
+
 function postAndRead() {
     if (REQUEST_RUNNING) {
         return false;
@@ -62,32 +63,34 @@ class ExecuteAndProcessOutput {
             .then(response => {
                 this.form.disabled = true;
                 if (response.body === undefined) {
-                    console.log('body streams are experimental in FireFox and not enabled by default!');
-                    console.log('It is supported in FF by setting "javascript.options.streams" to true in "about:config"');
-                    console.log('See: https://developer.mozilla.org/en-US/docs/Web/API/Body/body');
-                    console.warn('Falling back to reading full response.');
-                    response.text()
-                        .then(text => this.output_div.innerHTML = text);
-
-                    submit_btn.disabled = false;
-
+                    firefoxFallback(response)
                     return;
-
+                } else {
+                    let reader = response.body.getReader();
+                    return this.processStreamReader(reader);
                 }
-                let reader = response.body.getReader();
-
-                return this.processStreamReader(reader);
             })
             .then(_ => {
                 REQUEST_RUNNING = false
                 submit_btn.disabled = false;
             })
             .catch(error => {
-                console.error(error);
-                REQUEST_RUNNING = false;
-                submit_btn.disabled = false;
-        }
-    );
+                    console.error(error);
+                    REQUEST_RUNNING = false;
+                    submit_btn.disabled = false;
+                }
+            );
+    }
+
+    firefoxFallback(response) {
+        console.log('body streams are experimental in FireFox and not enabled by default!');
+        console.log('It is supported in FF by setting "javascript.options.streams" to true in "about:config"');
+        console.log('See: https://developer.mozilla.org/en-US/docs/Web/API/Body/body');
+        console.warn('Falling back to reading full response.');
+        response.text()
+            .then(text => this.output_div.innerHTML = text);
+
+        submit_btn.disabled = false;
 
     }
 

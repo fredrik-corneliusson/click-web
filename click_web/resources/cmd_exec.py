@@ -62,7 +62,10 @@ def exec(command_path):
         yield _create_cmd_header(commands)
         if use_html:
             yield '<pre class="script-output">'
-        yield from _run_script_and_generate_stream(req_to_args, cmd)
+        if use_html:
+            yield from (escape(l) for l in _run_script_and_generate_stream(req_to_args, cmd))
+        else:
+            yield from _run_script_and_generate_stream(req_to_args, cmd)
         if use_html:
             yield '</pre>'
         yield from _create_result_footer(req_to_args)
@@ -80,15 +83,14 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
     log.info('Executing: %s', cmd)
     process = subprocess.Popen(cmd, shell=False,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               bufsize=1)
+                               stderr=subprocess.STDOUT)
     log.info('script running Pid: %d', process.pid)
 
     encoding = locale.getpreferredencoding(False)
 
     with process.stdout:
         for line in iter(process.stdout.readline, b''):
-            yield escape(line.decode(encoding))
+            yield line.decode(encoding)
     process.wait()  # wait for the subprocess to exit
     log.info('script finished Pid: %d', process.pid)
     for fi in req_to_args.field_infos:

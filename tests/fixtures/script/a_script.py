@@ -46,6 +46,14 @@ def command_with_output_folder(folder):
     click.echo(click.format_filename(folder))
 
 
+@cli.command()
+@click.option('--outfile', type=click.File('w'))
+def command_with_output_file(outfile):
+    click.echo(outfile)
+    if outfile:
+        outfile.write("test")
+
+
 class ACustomParamType(click.ParamType):
     """Just a stupid custom param type"""
     name = 'my_custom_type'

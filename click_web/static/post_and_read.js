@@ -83,9 +83,7 @@ class ExecuteAndProcessOutput {
     }
 
     firefoxFallback(response) {
-        console.log('body streams are experimental in FireFox and not enabled by default!');
-        console.log('It is supported in FF by setting "javascript.options.streams" to true in "about:config"');
-        console.log('See: https://developer.mozilla.org/en-US/docs/Web/API/Body/body');
+        console.log('Firefox < 65 body streams are experimental and not enabled by default.');
         console.warn('Falling back to reading full response.');
         response.text()
             .then(text => this.output_div.innerHTML = text);

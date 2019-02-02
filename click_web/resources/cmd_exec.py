@@ -39,7 +39,6 @@ def exec(command_path):
     log = click_web.logger
 
     root_command, *commands = command_path.split('/')
-
     cmd = [sys.executable,  # run with same python executable we are running with.
            click_web.script_file]
     req_to_args = RequestToCommandArgs()
@@ -95,6 +94,7 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
     for fi in req_to_args.field_infos:
         fi.after_script_executed()
 
+
 def _create_cmd_header(commands: List[str]):
     """
     Generate a command header.
@@ -102,6 +102,7 @@ def _create_cmd_header(commands: List[str]):
         here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
         This way the JS text readed knows this chunk will be special when inserting into DOM.
     """
+
     def generate():
         yield '<!-- CLICK_WEB START HEADER -->'
         yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
@@ -111,6 +112,7 @@ def _create_cmd_header(commands: List[str]):
     # so the whole block can be treated as html.
     html_str = '\n'.join(generate())
     return html_str
+
 
 def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     """
@@ -125,11 +127,11 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     lines = []
     lines.append('<!-- CLICK_WEB START FOOTER -->')
     if to_download:
-            lines.append('<b>Result files:</b><br>')
-            for fi in to_download:
-                lines.append('<ul> ')
-                lines.append(f'<li>{_build_relative_link(fi)}<br>')
-                lines.append('</ul>')
+        lines.append('<b>Result files:</b><br>')
+        for fi in to_download:
+            lines.append('<ul> ')
+            lines.append(f'<li>{_build_relative_link(fi)}<br>')
+            lines.append('</ul>')
 
     else:
         lines.append('<b>DONE</b>')
@@ -143,7 +145,7 @@ def _build_relative_link(field_info):
 
     rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
     uri = f'/static/results/{rel_file_path.as_posix()}'
-    return f'<a href="{uri}">{field_info.cmd_opt}</a>'
+    return f'<a href="{uri}">{field_info.link_name}</a>'
 
 
 class RequestToCommandArgs:
@@ -167,7 +169,10 @@ class RequestToCommandArgs:
         commands_field_infos = sorted(commands_field_infos)
 
         for fi in commands_field_infos:
-            log.info('filed info: %s', fi)
+
+            # must be called mostly for saving and preparing file output.
+            fi.before_script_execute()
+
             if fi.cmd_opt.startswith('--'):
                 # it's an option
                 args.extend(self._process_option(fi))
@@ -245,10 +250,15 @@ class FieldInfo:
         self.type = parts[3]
         self.is_file = self.type.startswith('file')
 
+        self.form_type = parts[4]
+
         'The actual command line option (--debug)'
-        self.cmd_opt = parts[4]
+        self.cmd_opt = parts[5]
 
         self.generate_download_link = False
+
+    def before_script_execute(self):
+        pass
 
     def after_script_executed(self):
         pass
@@ -260,6 +270,7 @@ class FieldInfo:
         res.append(f'parameter_index: {self.parameter_index}')
         res.append(f'option_type: {self.option_type}')
         res.append(f'type: {self.type}')
+        res.append(f'form_type: {self.form_type}')
         res.append(f'cmd_opt: {self.cmd_opt}')
         return ', '.join(res)
 
@@ -273,7 +284,7 @@ class FieldInfo:
 
 class FieldFileInfo(FieldInfo):
     """
-    Use for processing input fileds of file type.
+    Use for processing input fields of file type.
     Saves the posted data to a temp file.
     """
     'temp dir is on class in order to be uniqe for each request'
@@ -285,8 +296,11 @@ class FieldFileInfo(FieldInfo):
         self.type, mode = self.type.split('[')
         self.mode = mode[:-1]
         self.generate_download_link = True if 'w' in self.mode else False
+        self.link_name = f'{self.cmd_opt}.out'
 
         log.info(f'File mode for {self.key} is  {mode}')
+
+    def before_script_execute(self):
         self.save()
 
     @classmethod
@@ -323,14 +337,25 @@ class FieldFileInfo(FieldInfo):
 
 class FieldOutFileInfo(FieldFileInfo):
     """
-    Used when file option is just for output and form posted it as hidden field.
+    Used when file option is just for output and form posted it as hidden or text field.
     Just create a empty temp file to give it's path to command.
     """
+
+    def __init__(self, key):
+        super().__init__(key)
+        if self.form_type == 'text':
+            self.link_name = request.form[self.key]
+            # set the postfix to name name provided from form
+            # this way it will at least have the same extension when downloaded
+            self.file_suffix = request.form[self.key]
+        else:
+            # hidden no preferred file name can be provided by user
+            self.file_suffix = '.out'
 
     def save(self):
         name = secure_filename(self.key)
 
-        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name)
+        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name, suffix=self.file_suffix)
         log.info(f'Creating empty file for {self.key} as {filename}')
         self.file_path = filename
 

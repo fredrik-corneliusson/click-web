@@ -97,12 +97,22 @@ def process_optional_file(input: click.File):
 
 
 @file_handling.command()
+@click.option('--output', type=click.File('w'))
+def process_optional_output_file(output: click.File):
+    "Process an output file given as option"
+    if output is None:
+        click.echo("No input file given")
+    else:
+        output.write('Some text written to optional output file')
+
+
+@file_handling.command()
 @click.argument('input', type=click.File('rb'))
 @click.argument('output', type=click.File('wb'))
 def process_input_file(input: click.File, output: click.File):
     "Process file and create a download link for output file"
     if DEBUG:
-        click.echo("global debug set, printing some debug output")
+        click.echo("Global debug set, printing some debug output")
     while True:
         click.echo(f"Reading from {input.name}...")
         chunk = input.read(2048)

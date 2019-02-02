@@ -12,16 +12,16 @@ app = flask.Flask(__name__)
     'data, expected',
     [
         ({
-             '0.0.option.text.--an-option': 'option-value',
-             '0.1.option.text.--another-option': 'another-option-value',
-             '1.0.option.text.--option-for-other-command': 'some value'
+             '0.0.option.text.text.--an-option': 'option-value',
+             '0.1.option.text.text.--another-option': 'another-option-value',
+             '1.0.option.text.text.--option-for-other-command': 'some value'
          }, (['--an-option', 'option-value', '--another-option', 'another-option-value'],
              ['--option-for-other-command', 'some value']),
         ), # noqa
         (OrderedDict((
-                ('0.1.option.text.--another-option', 'another-option-value'),
-                ('0.0.option.text.--an-option', 'option-value'),
-                ('1.0.option.text.--option-for-other-command', 'some value')
+                ('0.1.option.text.text.--another-option', 'another-option-value'),
+                ('0.0.option.text.text.--an-option', 'option-value'),
+                ('1.0.option.text.text.--option-for-other-command', 'some value')
         )), (['--an-option', 'option-value', '--another-option', 'another-option-value'],
              ['--option-for-other-command', 'some value']),
         ),

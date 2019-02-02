@@ -75,10 +75,16 @@ class BaseInput:
             param_type = self.param.param_type_name
 
         click_type = self.type_attrs['click_type']
+        form_type = self.type_attrs['type']
 
         # in order for form to be have arguments for sub commands we need to add the
         # index of the command the argument belongs to
-        return separator.join(str(p) for p in (self.command_index, self.param_index, param_type, click_type, name))
+        return separator.join(str(p) for p in (self.command_index,
+                                               self.param_index,
+                                               param_type,
+                                               click_type,
+                                               form_type,
+                                               name))
 
 
 class ChoiceInput(BaseInput):
@@ -174,8 +180,12 @@ class FileInput(BaseInput):
         type_attrs['click_type'] = f'file[{mode}]'
 
         if 'r' not in mode:
-            # if file is only for output do not show in form
-            type_attrs['type'] = 'hidden'
+            if self.param.required:
+                # if file is only for output do not show in form
+                type_attrs['type'] = 'hidden'
+            else:
+                type_attrs['type'] = 'text'
+
         else:
             type_attrs['type'] = 'file'
         return type_attrs

@@ -5,15 +5,6 @@ function postAndRead() {
         return false;
     }
 
-    let submit_btn = document.getElementById("submit_btn");
-    submit_btn.disabled = true;
-
-    input_form = document.getElementById("inputform");
-    if (!input_form.reportValidity()) {
-        // not valid form values, abort.
-        return false;
-    }
-
     try {
         TextDecoder
     } catch (e) {
@@ -24,8 +15,13 @@ function postAndRead() {
 
     }
 
+    input_form = document.getElementById("inputform");
+    let submit_btn = document.getElementById("submit_btn");
+
+
     try {
         REQUEST_RUNNING = true;
+        submit_btn.disabled = true;
         let runner = new ExecuteAndProcessOutput(input_form);
         runner.run();
     } catch (e) {

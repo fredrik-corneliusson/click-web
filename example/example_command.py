@@ -33,6 +33,14 @@ def print_lines(lines, message, delay):
 
 
 @cli.command()
+@click.option("--unicode-msg", type=click.Choice(['Åäö']), default='Åäö', required=True,
+              help='Message with unicide chars to print.')
+def unicode_test(unicode_msg):
+    "Just print unicode message"
+    click.echo(f"This {unicode_msg} should be Åäö")
+
+
+@cli.command()
 @click.option("--email", type=EMAIL_TYPE, help='the email for user')
 @click.option("--number", type=int, help='a number')
 @click.argument("user", default="bode")
@@ -88,12 +96,13 @@ def process_optional_file(input: click.File):
     "Process a file given as option"
     if input is None:
         click.echo("no input file given")
-    while True:
-        click.echo(f"Reading from {input.name}...")
-        chunk = input.read(2048)
-        if not chunk:
-            break
-        click.echo(chunk.upper())
+    else:
+        while True:
+            click.echo(f"Reading from {input.name}...")
+            chunk = input.read(1024)
+            if not chunk:
+                break
+            click.echo(chunk)
 
 
 @file_handling.command()

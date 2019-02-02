@@ -1,8 +1,8 @@
-import locale
 import os
 import shutil
 import sys
 import tempfile
+import traceback
 from html import escape
 from pathlib import Path
 from typing import List
@@ -16,7 +16,7 @@ import subprocess
 
 from .input_fields import separator
 
-log = None
+logger = None
 
 HTML_HEAD = '''<!doctype html>
 <html lang="en">
@@ -35,8 +35,8 @@ def exec(command_path):
     Execute the command and stream the output from it as response
     :param command_path:
     """
-    global log
-    log = click_web.logger
+    global logger
+    logger = click_web.logger
 
     root_command, *commands = command_path.split('/')
     cmd = [sys.executable,  # run with same python executable we are running with.
@@ -62,10 +62,17 @@ def exec(command_path):
         yield _create_cmd_header(commands)
         if use_html:
             yield '<pre class="script-output">'
-        if use_html:
-            yield from (escape(l) for l in _run_script_and_generate_stream(req_to_args, cmd))
-        else:
-            yield from _run_script_and_generate_stream(req_to_args, cmd)
+        try:
+            if use_html:
+                yield from (escape(l) for l in _run_script_and_generate_stream(req_to_args, cmd))
+            else:
+                yield from _run_script_and_generate_stream(req_to_args, cmd)
+        except Exception as e:
+            # exited prematurely, show the error to user
+            yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
+            yield traceback.format_exc()
+            raise
+
         if use_html:
             yield '</pre>'
         yield from _create_result_footer(req_to_args)
@@ -80,19 +87,25 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
     """
     Execute the command the via Popen and yield output
     """
-    log.info('Executing: %s', cmd)
-    process = subprocess.Popen(cmd, shell=False,
+    logger.info('Executing: %s', cmd)
+    if not os.environ.get('PYTHONIOENCODING'):
+        # Fix unicode on windows
+        os.environ['PYTHONIOENCODING'] = 'UTF-8'
+
+    process = subprocess.Popen(cmd,
+                               shell=False,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
-    log.info('script running Pid: %d', process.pid)
+    logger.info('script running Pid: %d', process.pid)
 
-    encoding = locale.getpreferredencoding(False)
-
+    # TODO: setting to utf-8 fixes output in browser but
+    encoding = sys.getdefaultencoding()
     with process.stdout:
         for line in iter(process.stdout.readline, b''):
             yield line.decode(encoding)
+
     process.wait()  # wait for the subprocess to exit
-    log.info('script finished Pid: %d', process.pid)
+    logger.info('script finished Pid: %d', process.pid)
     for fi in req_to_args.field_infos:
         fi.after_script_executed()
 
@@ -132,7 +145,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
         lines.append('<b>Result files:</b><br>')
         for fi in to_download:
             lines.append('<ul> ')
-            lines.append(f'<li>{_build_relative_link(fi)}<br>')
+            lines.append(f'<li>{_absolute_relative_link(fi)}<br>')
             lines.append('</ul>')
 
     else:
@@ -142,7 +155,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     yield html_str
 
 
-def _build_relative_link(field_info):
+def _absolute_relative_link(field_info):
     """Hack as url_for needed request context"""
 
     rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
@@ -300,7 +313,7 @@ class FieldFileInfo(FieldInfo):
         self.generate_download_link = True if 'w' in self.mode else False
         self.link_name = f'{self.cmd_opt}.out'
 
-        log.info(f'File mode for {self.key} is  {mode}')
+        logger.info(f'File mode for {self.key} is  {mode}')
 
     def before_script_execute(self):
         self.save()
@@ -309,13 +322,13 @@ class FieldFileInfo(FieldInfo):
     def temp_dir(cls):
         if not cls._temp_dir:
             cls._temp_dir = tempfile.mkdtemp(dir=click_web.OUTPUT_FOLDER)
-        log.info(f'Temp dir: {cls._temp_dir}')
+        logger.info(f'Temp dir: {cls._temp_dir}')
         return cls._temp_dir
 
     def save(self):
-        log.info('Saving...')
+        logger.info('Saving...')
 
-        log.info('field value is a file! %s', self.key)
+        logger.info('field value is a file! %s', self.key)
         file = request.files[self.key]
         # if user does not select file, browser also
         # submit a empty part without filename
@@ -327,7 +340,7 @@ class FieldFileInfo(FieldInfo):
 
             fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name, suffix=suffix)
             self.file_path = filename
-            log.info(f'Saving {self.key} to {filename}')
+            logger.info(f'Saving {self.key} to {filename}')
             file.save(filename)
 
     def __str__(self):
@@ -358,7 +371,7 @@ class FieldOutFileInfo(FieldFileInfo):
         name = secure_filename(self.key)
 
         fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=name, suffix=self.file_suffix)
-        log.info(f'Creating empty file for {self.key} as {filename}')
+        logger.info(f'Creating empty file for {self.key} as {filename}')
         self.file_path = filename
 
 
@@ -373,7 +386,7 @@ class FieldPathInfo(FieldFileInfo):
         super().save()
         zip_extract_dir = tempfile.mkdtemp(dir=self.temp_dir())
 
-        log.info(f'Extracting: {self.file_path} to {zip_extract_dir}')
+        logger.info(f'Extracting: {self.file_path} to {zip_extract_dir}')
         shutil.unpack_archive(self.file_path, zip_extract_dir, 'zip')
         self.file_path = zip_extract_dir
 
@@ -383,9 +396,9 @@ class FieldPathInfo(FieldFileInfo):
         folder_path = self.file_path
         self.file_path = filename
 
-        log.info(f'Zipping {self.key} to {filename}')
+        logger.info(f'Zipping {self.key} to {filename}')
         self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
-        log.info(f'Zip file created {self.file_path}')
+        logger.info(f'Zip file created {self.file_path}')
         self.generate_download_link = True
 
 
@@ -405,7 +418,7 @@ class FieldPathOutInfo(FieldOutFileInfo):
         fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
         folder_path = self.file_path
         self.file_path = filename
-        log.info(f'Zipping {self.key} to {filename}')
+        logger.info(f'Zipping {self.key} to {filename}')
         self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
-        log.info(f'Zip file created {self.file_path}')
+        logger.info(f'Zip file created {self.file_path}')
         self.generate_download_link = True

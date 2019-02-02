@@ -15,6 +15,12 @@ def test_get_index(app, client):
          [
              '0.0.flag.bool_flag.checkbox.--debug'
          ]),
+        ('/cli/unicode-test', 200, 'Åäö'.encode('utf-8'),
+         [
+             '0.0.flag.bool_flag.checkbox.--debug',
+             '1.0.option.choice.option.--unicode-msg'
+         ]
+         ),
         ('/cli/command-with-option-and-argument', 200, b'<title>Command-With-Option-And-Argument</title>',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
@@ -34,18 +40,21 @@ def test_get_index(app, client):
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.argument.path[w].hidden.folder']),
-    ])
+    ]
+)
 def test_get_command(command_path, response_code, expected_msg, expected_form_ids, app, client):
     resp = client.get(command_path)
-    print(_get_form_ids(resp.data))
+    form_ids = _get_form_ids(resp.data)
+    print(form_ids)
+    print(resp.data)
     assert resp.status_code == response_code
     assert expected_msg in resp.data
-    assert expected_form_ids == _get_form_ids(resp.data)
+    assert expected_form_ids == form_ids
 
 
 def _get_form_ids(html):
     soup = BeautifulSoup(html, 'html.parser')
-    form_ids = [elem['id'] for elem in soup.find_all('input')]
+    form_ids = [elem['name'] for elem in soup.find_all(['input', 'select'])]
     return form_ids
 
 

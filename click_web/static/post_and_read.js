@@ -42,7 +42,7 @@ function postAndRead() {
 class ExecuteAndProcessOutput {
     constructor(form) {
         this.form = form;
-        this.decoder = new TextDecoder();
+        this.decoder = new TextDecoder('utf-8');
         this.output_header_div = document.getElementById("output-header")
         this.output_div = document.getElementById("output")
         this.output_footer_div = document.getElementById("output-footer")

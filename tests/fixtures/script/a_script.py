@@ -14,6 +14,14 @@ def simple_no_params_command():
     click.echo(f"Simpel noparams command called")
 
 
+@cli.command()
+@click.option("--unicode-msg", type=click.Choice(['Åäö']), default='Åäö', required=True,
+              help='Message with unicide chars to print.')
+def unicode_test(unicode_msg):
+    "Just print unicode message"
+    click.echo(f"This {unicode_msg} should be Åäö")
+
+
 @cli.group()
 def sub_group():
     'a sub group'

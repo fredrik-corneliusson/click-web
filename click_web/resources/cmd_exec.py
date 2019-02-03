@@ -115,7 +115,7 @@ def _create_cmd_header(commands: List[str]):
     Generate a command header.
     Note:
         here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
-        This way the JS text readed knows this chunk will be special when inserting into DOM.
+        This way the JS frontend can insert it in the correct place in the DOM.
     """
 
     def generate():
@@ -134,7 +134,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     Generate a footer.
     Note:
         here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
-        This way the JS text readed knows this chunk will be special when inserting into DOM.
+        This way the JS frontend can insert it in the correct place in the DOM.
     """
     to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link]
     # important yield this block as one string so it pushed to client in one go.
@@ -145,7 +145,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
         lines.append('<b>Result files:</b><br>')
         for fi in to_download:
             lines.append('<ul> ')
-            lines.append(f'<li>{_absolute_relative_link(fi)}<br>')
+            lines.append(f'<li>{_get_download_link(fi)}<br>')
             lines.append('</ul>')
 
     else:
@@ -155,7 +155,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     yield html_str
 
 
-def _absolute_relative_link(field_info):
+def _get_download_link(field_info):
     """Hack as url_for needed request context"""
 
     rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
@@ -210,7 +210,8 @@ class RequestToCommandArgs:
             yield field_info.file_path
         elif vals:
             # opt with value, if option was given multiple times get the values for each.
-            if field_info.option_type == 'flag' or ''.join(vals):
+            no_values = bool(''.join(vals))
+            if field_info.option_type == 'flag' or no_values:
                 # flag options should always be set if we get them
                 # for normal options they must have a non empty value
                 yield field_info.cmd_opt
@@ -225,9 +226,11 @@ class RequestToCommandArgs:
 class FieldInfo:
     """
     Extract information from the encoded form input field name
+    the parts:
+        [command_index].[opt_or_arg_index].[click_type].[html_input_type].[opt_or_arg_name]
     e.g.
-        "0.0.option.text.--an-option"
-        "0.1.argument.file[rb].an-argument"
+        "0.0.option.text.text.--an-option"
+        "0.1.argument.file[rb].text.an-argument"
     """
 
     @staticmethod

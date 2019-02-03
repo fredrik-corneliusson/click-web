@@ -1,5 +1,8 @@
 """
 Module contains click types that could be useful on web pages and provide form validation by just setting type.
+Custom web click types need to be imported into the main script not the app.py that flask runs with
+    from click_web.web_click_types import EMAIL_TYPE
+and replacing email type with the custom click type desired
 """
 import re
 

@@ -12,8 +12,8 @@
 </head>
 <body>
 <a href="/">Back to index</a>
-<h1>{{ command.name|title }}</h1>
-<div class="command-help">{{ command.help|capitalize }}</div>
+<h1>{{ command.name|striptags|title }}</h1>
+<div class="command-help">{{ command.help|striptags|capitalize }}</div>
 
 <form id="inputform"
       method="post"
@@ -33,7 +33,10 @@
                             {% if field.type == 'option' %}
                                 <select name="{{ field.name }}">
                                     {% for option in field.options %}
-                                        <option value="{{ option }}">{{ option }}</option>
+                                        <option value="{{ option }}"
+                                                {{ 'selected' if field.default == option else '' }}>
+                                            {{ option }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                             {% else %}

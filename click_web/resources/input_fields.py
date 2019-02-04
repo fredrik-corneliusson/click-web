@@ -95,6 +95,7 @@ class ChoiceInput(BaseInput):
         type_attrs = {}
         type_attrs['type'] = 'option'
         type_attrs['options'] = self.param.type.choices
+        type_attrs['default'] = self.param.default
         type_attrs['click_type'] = 'choice'
         return type_attrs
 

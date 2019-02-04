@@ -136,7 +136,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
         here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
         This way the JS frontend can insert it in the correct place in the DOM.
     """
-    to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link]
+    to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link and fi.link_name]
     # important yield this block as one string so it pushed to client in one go.
     # so the whole block can be treated as html.
     lines = []
@@ -199,15 +199,21 @@ class RequestToCommandArgs:
                     # TODO: does file upload support multiple keys? In that case support it.
                     args.append(fi.file_path)
                 else:
-                    args.extend(request.form.getlist(fi.key))
+                    arg_value = request.form.getlist(fi.key)
+                    has_values = bool(''.join(arg_value))
+                    # If arg value is empty the field was not filled, and thus optional argument
+                    if has_values:
+                        logger.info(f'arg_value: "{arg_value}"')
+                        args.extend(arg_value)
         return args
 
     def _process_option(self, field_info):
         vals = request.form.getlist(field_info.key)
         if field_info.is_file:
-            # it's a file, append the file path
-            yield field_info.cmd_opt
-            yield field_info.file_path
+            if field_info.link_name:
+                # it's a file, append the file path
+                yield field_info.cmd_opt
+                yield field_info.file_path
         elif vals:
             # opt with value, if option was given multiple times get the values for each.
             no_values = bool(''.join(vals))

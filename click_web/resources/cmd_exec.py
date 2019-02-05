@@ -98,7 +98,6 @@ def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: Li
                                stderr=subprocess.STDOUT)
     logger.info('script running Pid: %d', process.pid)
 
-    # TODO: setting to utf-8 fixes output in browser but
     encoding = sys.getdefaultencoding()
     with process.stdout:
         for line in iter(process.stdout.readline, b''):
@@ -138,7 +137,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
     """
     to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link and fi.link_name]
     # important yield this block as one string so it pushed to client in one go.
-    # so the whole block can be treated as html.
+    # This is so the whole block can be treated as html if JS frontend.
     lines = []
     lines.append('<!-- CLICK_WEB START FOOTER -->')
     if to_download:

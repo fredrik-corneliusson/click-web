@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 SHORT_DESCRIPTION = 'Serve click scripts over the web with minimal effort.'
 
@@ -21,7 +21,7 @@ testing_requirements = [
 
 setup(
     name='click-web',
-    version='0.6.1',
+    version='0.6.2',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',

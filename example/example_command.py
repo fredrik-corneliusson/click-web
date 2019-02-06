@@ -1,8 +1,8 @@
+import time
 from datetime import datetime
 from pathlib import Path
 
 import click
-import time
 
 from click_web.web_click_types import EMAIL_TYPE
 

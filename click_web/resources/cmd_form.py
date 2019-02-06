@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 import click
-from flask import render_template, abort
+from flask import abort, render_template
 
 import click_web
 from click_web.exceptions import CommandNotFound

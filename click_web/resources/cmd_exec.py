@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import traceback
@@ -7,12 +8,10 @@ from html import escape
 from pathlib import Path
 from typing import List
 
-from flask import request, Response, url_for
+from flask import Response, request, url_for
 from werkzeug.utils import secure_filename
 
 import click_web
-
-import subprocess
 
 from .input_fields import separator
 

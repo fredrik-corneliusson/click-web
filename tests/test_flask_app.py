@@ -11,7 +11,7 @@ def test_get_index(app, client):
 @pytest.mark.parametrize(
     'command_path, response_code, expected_msg, expected_form_ids',
     [
-        ('/cli/simple-no-params-command', 200, b'<title>Simple-No-Params-Command</title>',
+        ('/cli/simple-no-params-command', 200, b'>Simple-No-Params-Command</',
          [
              '0.0.flag.bool_flag.checkbox.--debug'
          ]),
@@ -21,22 +21,22 @@ def test_get_index(app, client):
              '1.0.option.choice.option.--unicode-msg'
          ]
          ),
-        ('/cli/command-with-option-and-argument', 200, b'<title>Command-With-Option-And-Argument</title>',
+        ('/cli/command-with-option-and-argument', 200, b'>Command-With-Option-And-Argument</',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.option.text.text.--an-option',
              '1.1.argument.int.number.an-argument'
          ]),
-        ('/cli/sub-group/a-sub-group-command', 200, b'<title>A-Sub-Group-Command</title>',
+        ('/cli/sub-group/a-sub-group-command', 200, b'>A-Sub-Group-Command</',
          [
              '0.0.flag.bool_flag.checkbox.--debug'
          ]),
-        ('/cli/command-with-input-folder', 200, b'<title>Command-With-Input-Folder</title>',
+        ('/cli/command-with-input-folder', 200, b'>Command-With-Input-Folder</',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.argument.path[r].file.folder'
          ]),
-        ('/cli/command-with-output-folder', 200, b'<title>Command-With-Output-Folder</title>',
+        ('/cli/command-with-output-folder', 200, b'>Command-With-Output-Folder</',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.argument.path[w].hidden.folder']),

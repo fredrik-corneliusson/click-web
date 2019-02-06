@@ -1,28 +1,21 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <title>{{ command.name|title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='pure.css') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
-    <script src="{{ url_for('static', filename='post_and_read.js') }}"></script>
-    <script>
-        // Note: must be full url to work on Firefox
-        const command_url = window.location.href;
-    </script>
-</head>
-<body>
-<a href="/">Back to index</a>
-<h1>{{ command.name|striptags|title }}</h1>
-<div class="command-help">{{ command.help|striptags|capitalize }}</div>
+<h1>{{ command.name|title }}</h1>
+<div class="command-help">{{ command.help }}</div>
 
 <form id="inputform"
       method="post"
-      onsubmit="return postAndRead();"
+      action="{{ request.url }}"
+      onsubmit="return postAndRead('{{ request.url }}');"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
     {% for level in levels %}
         <fieldset name="{{ level.command.name }}">
-            <legend class="command-header">{{ level.command.name }}</legend>
+            {% if loop.index == 1 %}
+                {# do not print root command as it most likely is juse "cli" #}
+                <legend class="command-header"></legend>
+            {% else %}
+                <legend class="command-header">{{ level.command.name }}</legend>
+            {% endif %}
+
             {% for field in level.fields %}
                 <div class="parameter {{ field.param }} {{ field.type }}">
                     <div class="pure-control-group">
@@ -66,6 +59,3 @@
 <div id="output-header" hidden="true"></div>
 <div class="script-output" id="output" hidden="true"></div>
 <div id="output-footer" hidden="true"></div>
-
-</body>
-</html>

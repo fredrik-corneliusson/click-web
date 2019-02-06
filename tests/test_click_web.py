@@ -2,11 +2,11 @@ import pprint
 from pathlib import Path
 
 import click
-import pytest
 
 import click_web
 import click_web.resources.cmd_form
 import click_web.resources.input_fields
+import pytest
 from click_web.resources.cmd_form import _generate_form_data
 from tests.fixtures.script.a_script import ACustomParamType
 

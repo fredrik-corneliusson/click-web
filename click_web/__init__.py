@@ -2,11 +2,11 @@ import tempfile
 from pathlib import Path
 
 import click
-import click_web.resources.index
-import click_web.resources.cmd_exec
-from flask import Flask, Blueprint
+from flask import Blueprint, Flask
 
+import click_web.resources.cmd_exec
 import click_web.resources.cmd_form
+import click_web.resources.index
 
 'The full path to the click script file to execute.'
 script_file = None

@@ -1,10 +1,9 @@
 from collections import OrderedDict
 
 import click
+from flask import render_template
 
 import click_web
-
-from flask import render_template
 
 
 def index():

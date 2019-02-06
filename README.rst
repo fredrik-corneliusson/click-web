@@ -69,11 +69,19 @@ Unsupported click features
 It has only been tested with basic click features, and most advanced
 features will probably not work.
 
--  Variadic Arguments (will need some JS on client side)
--  Promts (probably never will)
--  Custom ParamTypes (depending on implementation)
+- Variadic Arguments (will need some JS on client side)
+- Promts (probably never will)
+- Custom ParamTypes (depending on implementation)
 
 TODO
 ====
 
--  Abort started/running processes.
+- Abort started/running processes.
+- Browser history
+
+
+Included 3:rd party libraries
+=============================
+`SplitJs`_ - Copyright (c) 2018 Nathan Cahill (MIT license)
+
+.. _SplitJs: https://github.com/nathancahill/split/blob/master/packages/splitjs/LICENSE.txt

@@ -1,6 +1,6 @@
 let REQUEST_RUNNING = false;
 
-function postAndRead() {
+function postAndRead(commandUrl) {
     if (REQUEST_RUNNING) {
         return false;
     }
@@ -22,7 +22,7 @@ function postAndRead() {
     try {
         REQUEST_RUNNING = true;
         submit_btn.disabled = true;
-        let runner = new ExecuteAndProcessOutput(input_form);
+        let runner = new ExecuteAndProcessOutput(input_form, commandUrl);
         runner.run();
     } catch (e) {
         console.error(e);
@@ -36,8 +36,9 @@ function postAndRead() {
 }
 
 class ExecuteAndProcessOutput {
-    constructor(form) {
+    constructor(form, commandPath) {
         this.form = form;
+        this.commandUrl = commandPath;
         this.decoder = new TextDecoder('utf-8');
         this.output_header_div = document.getElementById("output-header")
         this.output_div = document.getElementById("output")
@@ -54,8 +55,7 @@ class ExecuteAndProcessOutput {
 
     run() {
         let submit_btn = document.getElementById("submit_btn");
-
-        this.post()
+        this.post(this.commandUrl)
             .then(response => {
                 this.form.disabled = true;
                 if (response.body === undefined) {
@@ -89,8 +89,8 @@ class ExecuteAndProcessOutput {
     }
 
     post() {
-        console.log("Posting to " + command_url);
-        return fetch(command_url, {
+        console.log("Posting to " + this.commandUrl);
+        return fetch(this.commandUrl, {
             method: "POST",
             body: new FormData(this.form),
             // for fetch streaming only accept plain text, we wont handle html

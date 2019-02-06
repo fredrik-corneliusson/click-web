@@ -5,7 +5,7 @@ body {
     line-height: 1.429;
     color: rgba(0, 0, 0, 0.87);
     background-color: #FFF;
-    margin: 10px;
+    /*margin: 10px;*/
 }
 
 h1 {
@@ -60,6 +60,7 @@ input[type=number] {
     border-color: rgba(0, 0, 0, 0.30);;
     display: block;
     width: fit-content;
+    min-width: 95%;
     unicode-bidi: embed;
     font-family: monospace;
     white-space: pre;

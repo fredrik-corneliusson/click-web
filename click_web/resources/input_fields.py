@@ -174,9 +174,11 @@ class FileInput(BaseInput):
         type_attrs = {}
         if isinstance(self.param.type, click.File):
             mode = self.param.type.mode
+        elif isinstance(self.param.type, click.Path):
+            mode = 'w' if self.param.type.writable else ''
+            mode += 'r' if self.param.type.readable else ''
         else:
-            # TODO: figure out
-            mode = 'r'
+            raise NotSupported(f'Illegal param type. Got type: {self.param.type}')
 
         type_attrs['click_type'] = f'file[{mode}]'
 

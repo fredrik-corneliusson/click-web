@@ -222,7 +222,7 @@ class RequestToCommandArgs:
             # to turn of a flag add "--no-" prefix
             flag_on_cmd_line =  '--' + flag_name if flag_checked else '--no-' + flag_name
             yield flag_on_cmd_line
-        else:
+        elif ''.join(vals):
             # opt with value, if option was given multiple times get the values for each.
             # flag options should always be set if we get them
             # for normal options they must have a non empty value
@@ -230,7 +230,9 @@ class RequestToCommandArgs:
             for val in vals:
                 if val:
                     yield val
-
+        else:
+            # option with empty values, should not be added to command line.
+            pass
 
 class FieldInfo:
     """

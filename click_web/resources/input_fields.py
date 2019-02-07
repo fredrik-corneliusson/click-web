@@ -109,6 +109,7 @@ class FlagInput(BaseInput):
         type_attrs = {}
         type_attrs['type'] = 'checkbox'
         type_attrs['click_type'] = 'bool_flag'
+        type_attrs['value'] = 'True'
         return type_attrs
 
 

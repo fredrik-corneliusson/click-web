@@ -33,6 +33,14 @@
                                     {% endfor %}
                                 </select>
                             {% else %}
+                                {% if field.type == "checkbox" and field.checked %}
+                                    {#
+                                    Hack to work with flags that are default on.
+                                    As checkbox is only sent down when checked we duplicate
+                                    hidden field that is always sent but with empty value.
+                                    https://stackoverflow.com/a/1992745/1306577 #}
+                                    <input name="{{ field.name }}" type='hidden' value=''>
+                                {% endif %}
                                 <input name="{{ field.name }}"
                                        id="{{ field.name }}"
                                        type="{{ field.type }}"

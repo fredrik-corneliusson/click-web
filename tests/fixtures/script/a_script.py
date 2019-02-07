@@ -43,6 +43,13 @@ def command_with_option_and_argument(an_argument, an_option):
 
 
 @cli.command()
+@click.option("--flag/--no-flag", default=True, help='help for flag')
+def command_with_default_on_flag_option(flag):
+    'Help text'
+    click.echo(f"Ran command with flag {flag}")
+
+
+@cli.command()
 @click.argument('folder', type=click.Path(exists=True))
 def command_with_input_folder(folder):
     click.echo(click.format_filename(folder))
@@ -74,9 +81,10 @@ class ACustomParamType(click.ParamType):
 
 
 @cli.command()
-@click.argument('email', type=ACustomParamType())
-def command_with_custom_email_type(email):
-    click.echo(f'{email} is valid.')
+@click.argument('custom', type=ACustomParamType())
+def command_with_custom_type(custom):
+    "Argument must be set to 'spamspam' to be valid"
+    click.echo(f'{custom} is valid.')
 
 
 if __name__ == '__main__':

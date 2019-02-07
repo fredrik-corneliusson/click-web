@@ -11,31 +11,37 @@ def test_get_index(app, client):
 @pytest.mark.parametrize(
     'command_path, response_code, expected_msg, expected_form_ids',
     [
+
         ('/cli/simple-no-params-command', 200, b'>Simple-No-Params-Command</',
          [
              '0.0.flag.bool_flag.checkbox.--debug'
          ]),
+
         ('/cli/unicode-test', 200, 'Åäö'.encode('utf-8'),
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.option.choice.option.--unicode-msg'
          ]
          ),
+
         ('/cli/command-with-option-and-argument', 200, b'>Command-With-Option-And-Argument</',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.option.text.text.--an-option',
              '1.1.argument.int.number.an-argument'
          ]),
+
         ('/cli/sub-group/a-sub-group-command', 200, b'>A-Sub-Group-Command</',
          [
              '0.0.flag.bool_flag.checkbox.--debug'
          ]),
+
         ('/cli/command-with-input-folder', 200, b'>Command-With-Input-Folder</',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.argument.path[r].file.folder'
          ]),
+
         ('/cli/command-with-output-folder', 200, b'>Command-With-Output-Folder</',
          [
              '0.0.flag.bool_flag.checkbox.--debug',
@@ -79,25 +85,41 @@ def test_exec_default_arg_and_opt(app, client):
 @pytest.mark.parametrize(
     'form_data, expected_msg',
     [
-        ({'0.0.flag.bool_flag.--debug': None,
-          '1.0.option.text.--an-option': None,
-          '1.1.argument.int.an-argument': None
-          },
+        ({},
          b'Ran command with option: option_value argument 10'),
-        ({'0.0.flag.bool_flag.checkbox.--debug': None,
-          '1.0.option.text.text.--an-option': None,
+
+        ({
           '1.1.argument.int.number.an-argument': 321
           },
          b'Ran command with option: option_value argument 321'),
-        ({'0.0.flag.bool_flag.checkbox.--debug': None,
+
+        ({'0.0.flag.bool_flag.checkbox.--debug': 'True',
           '1.0.option.text.text.--an-option': 'ABC',
           '1.1.argument.int.number.an-argument': 321
           },
-         b'Ran command with option: ABC argument 321'),
-
+         b'Ran command with option: ABC argument 321')
     ])
 def test_exec_with_arg_and_default_opt(form_data, expected_msg, app, client):
     resp = client.post('/cli/command-with-option-and-argument',
+                       data=form_data)
+    assert resp.status_code == 200
+    print(resp.data)
+    assert expected_msg in resp.data
+
+
+@pytest.mark.parametrize(
+    'form_data, expected_msg',
+    [
+        ({'1.0.flag.bool_flag.checkbox.--flag': 'True'},
+         b'Ran command with flag True'),
+
+        # if it was not set we also send it down as a hidden field with empty string as value
+        ({'1.0.flag.bool_flag.checkbox.--flag': ''},
+         b'Ran command with flag False'),
+
+    ])
+def test_exec_with_default_on_flag_option(form_data, expected_msg, app, client):
+    resp = client.post('/cli/command-with-default-on-flag-option',
                        data=form_data)
     assert resp.status_code == 200
     print(resp.data)

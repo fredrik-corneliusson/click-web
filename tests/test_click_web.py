@@ -108,7 +108,7 @@ def test_command_path(cli,
           'param': 'option',
           'required': False,
           'type': 'checkbox',
-          'value': True}),
+          'value': 'True'}),
     ])
 def test_get_input_field(ctx, cli, param, expected, command_index):
     res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)

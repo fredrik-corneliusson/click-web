@@ -154,7 +154,7 @@ def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
 
 
 def _get_download_link(field_info):
-    """Hack as url_for needed request context"""
+    """Hack as url_for need request context"""
 
     rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
     uri = f'/static/results/{rel_file_path.as_posix()}'
@@ -212,19 +212,24 @@ class RequestToCommandArgs:
                 # it's a file, append the file path
                 yield field_info.cmd_opt
                 yield field_info.file_path
-        elif vals:
-            # opt with value, if option was given multiple times get the values for each.
-            no_values = bool(''.join(vals))
-            if field_info.option_type == 'flag' or no_values:
-                # flag options should always be set if we get them
-                # for normal options they must have a non empty value
-                yield field_info.cmd_opt
-                for val in vals:
-                    if val:
-                        yield val
+        elif field_info.option_type == 'flag':
+
+            flag_name = field_info.cmd_opt.lstrip('-')
+            # ugly hack, To work with flag that is default True a hidden field with same name is also sent by form.
+            # This is to detect if checkbox was not checked as then we will get the field anyway with the empty string
+            # as value. So to know if it is checked we join all the values sent down for flags.
+            flag_checked = ''.join(vals)
+            # to turn of a flag add "--no-" prefix
+            flag_on_cmd_line =  '--' + flag_name if flag_checked else '--no-' + flag_name
+            yield flag_on_cmd_line
         else:
-            # boolean opt
+            # opt with value, if option was given multiple times get the values for each.
+            # flag options should always be set if we get them
+            # for normal options they must have a non empty value
             yield field_info.cmd_opt
+            for val in vals:
+                if val:
+                    yield val
 
 
 class FieldInfo:

@@ -54,7 +54,7 @@ def simple_command(user, email, number=None):
 @click.argument("user")
 def simple_command_missing_default_value(user, someopt=None):
     "Command with text and number inputs"
-    click.echo(f"Hi {user}, option was set to: {someopt}")
+    click.echo(f"Hi {user}, option was set to: {repr(someopt)}")
 
 
 @cli.group()

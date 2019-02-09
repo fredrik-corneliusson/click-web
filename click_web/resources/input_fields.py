@@ -109,7 +109,11 @@ class FlagInput(BaseInput):
         type_attrs = {}
         type_attrs['type'] = 'checkbox'
         type_attrs['click_type'] = 'bool_flag'
-        type_attrs['value'] = 'True'
+        type_attrs['value'] = self.param.opts[0]
+        # the "on" value e.g ['--flag']
+        type_attrs['on_flag'] = self.param.opts[0]
+        # the "off" value e.g ['--no-flag']
+        type_attrs['off_flag'] = self.param.secondary_opts[0]
         return type_attrs
 
 

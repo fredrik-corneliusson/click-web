@@ -93,7 +93,7 @@ def test_exec_default_arg_and_opt(app, client):
           },
          b'Ran command with option: option_value argument 321'),
 
-        ({'0.0.flag.bool_flag.checkbox.--debug': 'True',
+        ({'0.0.flag.bool_flag.checkbox.--debug': '--debug',
           '1.0.option.text.text.--an-option': 'ABC',
           '1.1.argument.int.number.an-argument': 321
           },
@@ -110,11 +110,11 @@ def test_exec_with_arg_and_default_opt(form_data, expected_msg, app, client):
 @pytest.mark.parametrize(
     'form_data, expected_msg',
     [
-        ({'1.0.flag.bool_flag.checkbox.--flag': 'True'},
+        ({'1.0.flag.bool_flag.checkbox.--flag': '--flag'},
          b'Ran command with flag True'),
 
-        # if it was not set we also send it down as a hidden field with empty string as value
-        ({'1.0.flag.bool_flag.checkbox.--flag': ''},
+        # if it was not set we also send it down as a hidden field with turn off flag as value
+        ({'1.0.flag.bool_flag.checkbox.--flag': '--no-flag'},
          b'Ran command with flag False'),
 
     ])

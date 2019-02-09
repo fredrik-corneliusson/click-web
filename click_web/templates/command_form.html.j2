@@ -39,7 +39,7 @@
                                     As checkbox is only sent down when checked we duplicate
                                     hidden field that is always sent but with empty value.
                                     https://stackoverflow.com/a/1992745/1306577 #}
-                                    <input name="{{ field.name }}" type='hidden' value=''>
+                                    <input name="{{ field.name }}" type='hidden' value='{{ field.off_flag }}'>
                                 {% endif %}
                                 <input name="{{ field.name }}"
                                        id="{{ field.name }}"

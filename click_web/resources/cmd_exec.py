@@ -213,26 +213,30 @@ class RequestToCommandArgs:
                 yield field_info.cmd_opt
                 yield field_info.file_path
         elif field_info.option_type == 'flag':
+            # To work with flag that is default True a hidden field with same name is also sent by form.
+            # This is to detect if checkbox was not checked as then we will get the field anyway with the "off flag"
+            # as value.
+            if len(vals) == 1:
+                off_flag = vals[0]
+                flag_on_cmd_line = off_flag
+            else:
+                # we got both off and on flags, checkbox is checked.
+                on_flag = vals[1]
+                flag_on_cmd_line = on_flag
 
-            flag_name = field_info.cmd_opt.lstrip('-')
-            # ugly hack, To work with flag that is default True a hidden field with same name is also sent by form.
-            # This is to detect if checkbox was not checked as then we will get the field anyway with the empty string
-            # as value. So to know if it is checked we join all the values sent down for flags.
-            flag_checked = ''.join(vals)
-            # to turn of a flag add "--no-" prefix
-            flag_on_cmd_line =  '--' + flag_name if flag_checked else '--no-' + flag_name
             yield flag_on_cmd_line
         elif ''.join(vals):
             # opt with value, if option was given multiple times get the values for each.
             # flag options should always be set if we get them
             # for normal options they must have a non empty value
-            yield field_info.cmd_opt
             for val in vals:
+                yield field_info.cmd_opt
                 if val:
                     yield val
         else:
             # option with empty values, should not be added to command line.
             pass
+
 
 class FieldInfo:
     """

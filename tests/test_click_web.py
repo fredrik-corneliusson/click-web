@@ -105,10 +105,12 @@ def test_command_path(cli,
           'human_readable_name': 'flag',
           'name': '3.0.flag.bool_flag.checkbox.--flag',
           'nargs': 1,
+          'off_flag': '--no-flag',
+          'on_flag': '--flag',
           'param': 'option',
           'required': False,
           'type': 'checkbox',
-          'value': 'True'}),
+          'value': '--flag'}),
     ])
 def test_get_input_field(ctx, cli, param, expected, command_index):
     res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)

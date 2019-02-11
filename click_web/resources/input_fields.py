@@ -113,7 +113,8 @@ class FlagInput(BaseInput):
         # the "on" value e.g ['--flag']
         type_attrs['on_flag'] = self.param.opts[0]
         # the "off" value e.g ['--no-flag']
-        type_attrs['off_flag'] = self.param.secondary_opts[0]
+        if self.param.secondary_opts:
+            type_attrs['off_flag'] = self.param.secondary_opts[0]
         return type_attrs
 
 

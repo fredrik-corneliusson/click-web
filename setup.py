@@ -15,13 +15,14 @@ requirements = [
 testing_requirements = [
     'pytest>=4.1',
     'flake8>=3.6',
-    'beautifulsoup4>=4.7.1'
+    'beautifulsoup4>=4.7.1',
+    'isort>=4.3.4'
 ]
 
 
 setup(
     name='click-web',
-    version='0.6.4',
+    version='0.6.5',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',

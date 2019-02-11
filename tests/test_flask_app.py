@@ -46,6 +46,11 @@ def test_get_index(app, client):
          [
              '0.0.flag.bool_flag.checkbox.--debug',
              '1.0.argument.path[w].hidden.folder']),
+
+        ('/cli/command-with-flag-without-off-option', 200, b'>Command-With-Flag-Without-Off-Option</',
+         [
+             '0.0.flag.bool_flag.checkbox.--debug',
+             '1.0.flag.bool_flag.checkbox.--flag']),
     ]
 )
 def test_get_command(command_path, response_code, expected_msg, expected_form_ids, app, client):

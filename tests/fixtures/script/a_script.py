@@ -94,5 +94,13 @@ def command_with_custom_type(custom):
     click.echo(f'{custom} is valid.')
 
 
+@cli.command()
+@click.argument("users", nargs=-1)
+def command_with_variadic_args(users):
+    "Command with variadic args"
+    for i, user in enumerate(users):
+        click.echo(f"Hi {user}, you are number {i + 1}")
+
+
 if __name__ == '__main__':
     cli()

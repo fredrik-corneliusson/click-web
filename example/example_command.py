@@ -166,6 +166,14 @@ def process_input_output_folder(input_folder, out_folder):
         out.write(f"This was written by process_output_folder {datetime.now()}")
 
 
+@cli.command()
+@click.argument("users", nargs=-1)
+def variadic_args(users):
+    "Command with variadic args"
+    for i, user in enumerate(users):
+        click.echo(f"Hi {user}, you are number {i + 1}")
+
+
 def add_external_command(USE_MULTI_COMMAND=False):
     """
     Shows an example of how to add external click commands from other modules

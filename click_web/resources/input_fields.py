@@ -1,6 +1,5 @@
 import click
 
-from click_web import exceptions
 from click_web.web_click_types import EmailParamType
 
 separator = '.'
@@ -45,8 +44,8 @@ class BaseInput:
         field['name'] = self._build_name(name)
         field['required'] = param.required
 
-        if param.nargs < 0:
-            raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
+        # if param.nargs < 0:
+        #     raise exceptions.ClickWebException("Parameters with unlimited nargs not supportet at the moment.")
         field['nargs'] = param.nargs
         field['human_readable_name'] = param.human_readable_name.replace('_', ' ')
         field.update(self.type_attrs)

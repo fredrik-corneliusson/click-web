@@ -2,11 +2,11 @@ import pprint
 from pathlib import Path
 
 import click
-import pytest
 
 import click_web
 import click_web.resources.cmd_form
 import click_web.resources.input_fields
+import pytest
 from click_web.resources.cmd_form import _generate_form_data
 from tests.fixtures.script.a_script import ACustomParamType
 
@@ -113,6 +113,27 @@ def test_command_path(cli,
           'value': '--flag'}),
     ])
 def test_get_input_field(ctx, cli, param, expected, command_index):
+    res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
+    pprint.pprint(res)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    'param, command_index, expected',
+    [
+        (click.Argument(["an_argument", ], nargs=-1), 0,
+         {'checked': '',
+          'click_type': 'text',
+          'help': '',
+          'human_readable_name': 'AN ARGUMENT',
+          'name': '0.0.argument.text.text.an-argument',
+          'nargs': -1,
+          'param': 'argument',
+          'required': False,
+          'type': 'text',
+          'value': None}),
+    ])
+def test_variadic_arguments(ctx, cli, param, expected, command_index):
     res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
     pprint.pprint(res)
     assert res == expected

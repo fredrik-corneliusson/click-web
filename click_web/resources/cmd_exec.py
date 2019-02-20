@@ -202,9 +202,8 @@ class RequestToCommandArgs:
                     # If arg value is empty the field was not filled, and thus optional argument
                     if has_values:
                         if fi.param.nargs == -1:
-                            # it a variadic arguments
-                            # in form they are a textarea so they are sent down as a text of multiple lines
-                            # treat each line as a separate argument.
+                            # Variadic argument, in html form each argument is a separate line in a textarea.
+                            # treat each line we get from text area as a separate argument.
                             for value in arg_values:
                                 values = value.splitlines()
                                 logger.info(f'variadic arguments, split into: "{values}"')

@@ -61,3 +61,29 @@ def test_exec_with_default_on_flag_option(form_data, expected_msg, app, client):
     assert resp.status_code == 200
     print(resp.data)
     assert expected_msg in resp.data
+
+
+@pytest.mark.parametrize(
+    'form_data, expected_msg',
+    [
+        ({},
+         b'<pre class="script-output">'),
+
+        ({
+             '1.1.argument.int.-1.number.an-argument': 'line 1'
+         },
+         b'Hi line 1, you are number 1'),
+
+        ({
+             '1.1.argument.int.-1.number.an-argument': 'line 1\nline 2'
+         },
+         b'line 2, you are number 2'),
+
+    ])
+def test_exec_with_variadic_args(form_data, expected_msg, app, client):
+    resp = client.post('/cli/command-with-variadic-args',
+                       data=form_data)
+    assert resp.status_code == 200
+    print(resp.data)
+    assert expected_msg in resp.data
+

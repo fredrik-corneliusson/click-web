@@ -197,12 +197,21 @@ class RequestToCommandArgs:
                     # TODO: does file upload support multiple keys? In that case support it.
                     args.append(fi.file_path)
                 else:
-                    arg_value = request.form.getlist(fi.key)
-                    has_values = bool(''.join(arg_value))
+                    arg_values = request.form.getlist(fi.key)
+                    has_values = bool(''.join(arg_values))
                     # If arg value is empty the field was not filled, and thus optional argument
                     if has_values:
-                        logger.info(f'arg_value: "{arg_value}"')
-                        args.extend(arg_value)
+                        if fi.param.nargs == -1:
+                            # it a variadic arguments
+                            # in form they are a textarea so they are sent down as a text of multiple lines
+                            # treat each line as a separate argument.
+                            for value in arg_values:
+                                values = value.splitlines()
+                                logger.info(f'variadic arguments, split into: "{values}"')
+                                args.extend(values)
+                        else:
+                            logger.info(f'arg_value: "{arg_values}"')
+                            args.extend(arg_values)
         return args
 
     def _process_option(self, field_info):

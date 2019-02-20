@@ -69,7 +69,7 @@ Unsupported click features
 It has only been tested with basic click features, and most advanced
 features will probably not work.
 
-- Variadic Arguments (will need some JS on client side)
+- Variadic arguments of file and path type
 - Promts (probably never will)
 - Custom ParamTypes (depending on implementation)
 

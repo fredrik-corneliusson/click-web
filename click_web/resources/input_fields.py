@@ -33,7 +33,7 @@ class FieldId:
         'Type of option (file, text)'
         self.click_type = click_type
         'nargs value (-1 is variardic)'
-        self.nargs = nargs
+        self.nargs = int(nargs)
         'Type of html input type'
         self.form_type = form_type
         'The actual command line option (--debug)'

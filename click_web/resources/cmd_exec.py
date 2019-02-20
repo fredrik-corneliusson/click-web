@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 import click_web
 
-from .input_fields import separator
+from .input_fields import FieldId
 
 logger = None
 
@@ -178,7 +178,7 @@ class RequestToCommandArgs:
         args = []
 
         # only include relevant fields for this command index
-        commands_field_infos = [fi for fi in self.field_infos if fi.cmd_index == command_index]
+        commands_field_infos = [fi for fi in self.field_infos if fi.param.command_index == command_index]
         commands_field_infos = sorted(commands_field_infos)
 
         for fi in commands_field_infos:
@@ -212,7 +212,7 @@ class RequestToCommandArgs:
                 # it's a file, append the file path
                 yield field_info.cmd_opt
                 yield field_info.file_path
-        elif field_info.option_type == 'flag':
+        elif field_info.param.param_type == 'flag':
             # To work with flag that is default True a hidden field with same name is also sent by form.
             # This is to detect if checkbox was not checked as then we will get the field anyway with the "off flag"
             # as value.
@@ -250,43 +250,33 @@ class FieldInfo:
 
     @staticmethod
     def factory(key):
-        parts = key.split(separator)
-        type = parts[3]
-        is_file = type.startswith('file')
-        is_path = type.startswith('path')
+        field_id = FieldId.from_string(key)
+        is_file = field_id.click_type.startswith('file')
+        is_path = field_id.click_type.startswith('path')
         is_uploaded = key in request.files
         if is_file:
             if is_uploaded:
-                field_info = FieldFileInfo(key)
+                field_info = FieldFileInfo(field_id)
             else:
-                field_info = FieldOutFileInfo(key)
+                field_info = FieldOutFileInfo(field_id)
         elif is_path:
             if is_uploaded:
-                field_info = FieldPathInfo(key)
+                field_info = FieldPathInfo(field_id)
             else:
-                field_info = FieldPathOutInfo(key)
+                field_info = FieldPathOutInfo(field_id)
         else:
-            field_info = FieldInfo(key)
+            field_info = FieldInfo(field_id)
         return field_info
 
-    def __init__(self, key):
-        self.key = key
+    def __init__(self, param: FieldId):
+        self.param = param
+        self.key = param.key
 
-        parts = key.split(separator)
-        'the int index of the command it belongs to'
-        self.cmd_index = int(parts[0])
-        'the int index for the ordering of paramters/arguments'
-        self.parameter_index = int(parts[1])
-        'Type of option (argument, option, flag)'
-        self.option_type = parts[2]
         'Type of option (file, text)'
-        self.type = parts[3]
-        self.is_file = self.type.startswith('file')
-
-        self.form_type = parts[4]
+        self.is_file = self.param.click_type.startswith('file')
 
         'The actual command line option (--debug)'
-        self.cmd_opt = parts[5]
+        self.cmd_opt = param.name
 
         self.generate_download_link = False
 
@@ -297,19 +287,12 @@ class FieldInfo:
         pass
 
     def __str__(self):
-        res = []
-        res.append(f'key: {self.key}')
-        res.append(f'key_cmd_index: {self.cmd_index}')
-        res.append(f'parameter_index: {self.parameter_index}')
-        res.append(f'option_type: {self.option_type}')
-        res.append(f'type: {self.type}')
-        res.append(f'form_type: {self.form_type}')
-        res.append(f'cmd_opt: {self.cmd_opt}')
-        return ', '.join(res)
+        return str(self.param)
 
     def __lt__(self, other):
         "Make class sortable"
-        return (self.cmd_index, self.parameter_index) < (other.cmd_index, other.parameter_index)
+        return (self.param.command_index, self.param.param_index) < \
+               (other.param.command_index, other.param.param_index)
 
     def __eq__(self, other):
         return self.key == other.key
@@ -323,15 +306,14 @@ class FieldFileInfo(FieldInfo):
     'temp dir is on class in order to be uniqe for each request'
     _temp_dir = None
 
-    def __init__(self, key):
-        super().__init__(key)
+    def __init__(self, fimeta):
+        super().__init__(fimeta)
         # Extract the file mode that is in the type e.g file[rw]
-        self.type, mode = self.type.split('[')
-        self.mode = mode[:-1]
+        self.mode = self.param.click_type.split('[')[1][:-1]
         self.generate_download_link = True if 'w' in self.mode else False
         self.link_name = f'{self.cmd_opt}.out'
 
-        logger.info(f'File mode for {self.key} is  {mode}')
+        logger.info(f'File mode for {self.key} is {self.mode}')
 
     def before_script_execute(self):
         self.save()
@@ -374,9 +356,9 @@ class FieldOutFileInfo(FieldFileInfo):
     Just create a empty temp file to give it's path to command.
     """
 
-    def __init__(self, key):
-        super().__init__(key)
-        if self.form_type == 'text':
+    def __init__(self, fimeta):
+        super().__init__(fimeta)
+        if self.param.form_type == 'text':
             self.link_name = request.form[self.key]
             # set the postfix to name name provided from form
             # this way it will at least have the same extension when downloaded

@@ -2,7 +2,58 @@ import click
 
 from click_web.web_click_types import EmailParamType
 
-separator = '.'
+
+
+class FieldId:
+    """
+    Extract/serialize information from the encoded form input field name
+    the parts:
+        [command_index].[opt_or_arg_index].[click_type].[html_input_type].[opt_or_arg_name]
+    e.g.
+        "0.0.option.text.text.--an-option"
+        "0.1.argument.file[rb].text.an-argument"
+    """
+    SEPARATOR = '.'
+    def __init__(self,
+                 command_index,
+                 param_index,
+                 param_type,
+                 click_type,
+                 nargs,
+                 form_type,
+                 name,
+                 key=None):
+
+        'the int index of the command it belongs to'
+        self.command_index = int(command_index)
+        'the int index for the ordering of paramters/arguments'
+        self.param_index = int(param_index)
+        'Type of option (argument, option, flag)'
+        self.param_type = param_type
+        'Type of option (file, text)'
+        self.click_type = click_type
+        'nargs value (-1 is variardic)'
+        self.nargs = nargs
+        'Type of html input type'
+        self.form_type = form_type
+        'The actual command line option (--debug)'
+        self.name = name
+        'The actual form id'
+        self.key = key if key else str(self)
+
+    def __str__(self):
+        return self.SEPARATOR.join(str(p) for p in (self.command_index,
+                                               self.param_index,
+                                               self.param_type,
+                                               self.click_type,
+                                               self.nargs,
+                                               self.form_type,
+                                               self.name))
+
+    @classmethod
+    def from_string(cls, field_info_as_string) -> 'FieldId':
+        args = field_info_as_string.split(cls.SEPARATOR) + [field_info_as_string,]
+        return cls(*args)
 
 
 class NotSupported(ValueError):
@@ -78,12 +129,13 @@ class BaseInput:
 
         # in order for form to be have arguments for sub commands we need to add the
         # index of the command the argument belongs to
-        return separator.join(str(p) for p in (self.command_index,
-                                               self.param_index,
-                                               param_type,
-                                               click_type,
-                                               form_type,
-                                               name))
+        return str(FieldId(self.command_index,
+                           self.param_index,
+                           param_type,
+                           click_type,
+                           self.param.nargs,
+                           form_type,
+                           name))
 
 
 class ChoiceInput(BaseInput):

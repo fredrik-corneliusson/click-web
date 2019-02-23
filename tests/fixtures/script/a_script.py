@@ -43,6 +43,13 @@ def command_with_option_and_argument(an_argument, an_option):
 
 
 @cli.command()
+@click.option("--an-option", type=str, nargs=2, help='help for an option')
+def command_with_nargs_option(an_option):
+    'Help text'
+    click.echo(f"Ran command with option: {an_option}")
+
+
+@cli.command()
 @click.option("--flag", is_flag=True, default=False, help='help for flag')
 def command_with_flag_without_off_option(flag):
     'Help text'

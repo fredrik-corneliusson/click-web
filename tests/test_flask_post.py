@@ -1,3 +1,5 @@
+from werkzeug.datastructures import MultiDict
+
 import pytest
 
 
@@ -26,8 +28,8 @@ def test_exec_default_arg_and_opt(app, client):
          b'Ran command with option: option_value argument 10'),
 
         ({
-          '1.1.argument.int.1.number.an-argument': 321
-          },
+             '1.1.argument.int.1.number.an-argument': 321
+         },
          b'Ran command with option: option_value argument 321'),
 
         ({'0.0.flag.bool_flag.1.checkbox.--debug': '--debug',
@@ -67,6 +69,33 @@ def test_exec_with_default_on_flag_option(form_data, expected_msg, app, client):
     'form_data, expected_msg',
     [
         ({},
+         b'Ran command with option: ()'),
+
+        (MultiDict([('1.0.option.text.2.text.--an-option', 'a'),
+                    ('1.0.option.text.2.text.--an-option', 'b')]),
+         b"Ran command with option: (&#x27;a&#x27;, &#x27;b&#x27;)"),
+
+        (MultiDict([('1.0.option.text.2.text.--an-option', 'a')]),
+         b"Error: --an-option option requires 2 arguments"),
+
+        (MultiDict([('1.0.option.text.2.text.--an-option', 'a'),
+                    ('1.0.option.text.2.text.--an-option', 'b'),
+                    ('1.0.option.text.2.text.--an-option', 'c')]),
+         b"Got unexpected extra argument (c)"),
+
+    ])
+def test_exec_with_nargs_opts(form_data, expected_msg, app, client):
+    resp = client.post('/cli/command-with-nargs-option',
+                       data=form_data)
+    assert resp.status_code == 200
+    print(resp.data)
+    assert expected_msg in resp.data
+
+
+@pytest.mark.parametrize(
+    'form_data, expected_msg',
+    [
+        ({},
          b'<pre class="script-output">'),
 
         ({
@@ -86,4 +115,3 @@ def test_exec_with_variadic_args(form_data, expected_msg, app, client):
     assert resp.status_code == 200
     print(resp.data)
     assert expected_msg in resp.data
-

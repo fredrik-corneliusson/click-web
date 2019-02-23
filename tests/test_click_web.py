@@ -245,7 +245,6 @@ def test_get_custom_input_field_type(ctx, cli, param, expected, command_index):
             return type_attrs
 
     # Register it to the list of supported types.
-    # Add it first as we there already is a input type that matches.
     click_web.resources.input_fields.INPUT_TYPES.append(CustomInput)
 
     res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)

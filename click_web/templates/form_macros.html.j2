@@ -1,7 +1,4 @@
 {% macro add_field_input(field) -%}
-    <label for="{{ field.name }}">
-        {{ field.human_readable_name|capitalize }}
-    </label>
     {% if field.type == 'option' %}
         {{ add_option_field(field) }}
     {% else %}
@@ -25,8 +22,6 @@
 
         >
     {% endif %}
-    <div class="help" style="display: inline-block">
-        {{ field.desc|default('', true)|capitalize }}</div>
 
 {%- endmacro %}
 

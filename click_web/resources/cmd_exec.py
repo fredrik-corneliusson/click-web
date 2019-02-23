@@ -237,8 +237,8 @@ class RequestToCommandArgs:
             # opt with value, if option was given multiple times get the values for each.
             # flag options should always be set if we get them
             # for normal options they must have a non empty value
+            yield field_info.cmd_opt
             for val in vals:
-                yield field_info.cmd_opt
                 if val:
                     yield val
         else:

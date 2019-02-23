@@ -3,7 +3,6 @@ import click
 from click_web.web_click_types import EmailParamType
 
 
-
 class FieldId:
     """
     Extract/serialize information from the encoded form input field name
@@ -14,6 +13,7 @@ class FieldId:
         "0.1.argument.file[rb].text.an-argument"
     """
     SEPARATOR = '.'
+
     def __init__(self,
                  command_index,
                  param_index,
@@ -23,7 +23,6 @@ class FieldId:
                  form_type,
                  name,
                  key=None):
-
         'the int index of the command it belongs to'
         self.command_index = int(command_index)
         'the int index for the ordering of paramters/arguments'
@@ -43,16 +42,16 @@ class FieldId:
 
     def __str__(self):
         return self.SEPARATOR.join(str(p) for p in (self.command_index,
-                                               self.param_index,
-                                               self.param_type,
-                                               self.click_type,
-                                               self.nargs,
-                                               self.form_type,
-                                               self.name))
+                                                    self.param_index,
+                                                    self.param_type,
+                                                    self.click_type,
+                                                    self.nargs,
+                                                    self.form_type,
+                                                    self.name))
 
     @classmethod
     def from_string(cls, field_info_as_string) -> 'FieldId':
-        args = field_info_as_string.split(cls.SEPARATOR) + [field_info_as_string,]
+        args = field_info_as_string.split(cls.SEPARATOR) + [field_info_as_string, ]
         return cls(*args)
 
 

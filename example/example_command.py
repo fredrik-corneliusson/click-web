@@ -36,7 +36,17 @@ def print_lines(lines, message, delay):
 @click.option("--unicode-msg", type=click.Choice(['Åäö']), default='Åäö', required=True,
               help='Message with unicide chars to print.')
 def unicode_test(unicode_msg):
-    "Just print unicode message"
+    """
+    Just print unicode message
+    This helptext contains html and <b>should be escaped</b> so the actual tag should be showing.
+
+    \b
+
+    This is a help block
+    this should be displayed without reformat.
+
+    more normal help text...
+    """
     click.echo(f"This {unicode_msg} should be Åäö")
 
 

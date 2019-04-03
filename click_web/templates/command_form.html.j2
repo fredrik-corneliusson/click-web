@@ -1,6 +1,6 @@
 {% import 'form_macros.html.j2' as macros %}
 <h1>{{ command.name|title }}</h1>
-<div class="command-help">{{ command.help }}</div>
+<div class="command-help">{{ command.html_help }}</div>
 
 <form id="inputform"
       method="post"

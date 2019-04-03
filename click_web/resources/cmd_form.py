@@ -1,3 +1,4 @@
+from html import escape
 from typing import List, Tuple
 
 import click
@@ -60,9 +61,53 @@ def _generate_form_data(ctx_and_commands: List[Tuple[click.Context, click.Comman
     for command_index, (ctx, command) in enumerate(ctx_and_commands):
         # force help option off, no need in web.
         command.add_help_option = False
+        command.html_help = _process_help(command.help)
 
         input_fields = [get_input_field(ctx, param, command_index, param_index)
                         for param_index, param in enumerate(command.get_params(ctx))]
         levels.append({'command': command, 'fields': input_fields})
 
     return levels
+
+
+def _process_help(help_text):
+    """
+    Convert click command help into html to be presented to browser.
+    Respects the '\b' char used by click to mark pre-formatted blocks.
+    Also escapes html reserved characters in the help text.
+
+    :param help_text: str
+    :return: A html formatted help string.
+    """
+    help = []
+    in_pre = False
+    html_help = ''
+    if not help_text:
+        return html_help
+
+    line_iter = iter(help_text.splitlines())
+    while True:
+        try:
+            line = next(line_iter)
+            if in_pre and not line.strip():
+                # end of code block
+                in_pre = False
+                html_help += '\n'.join(help)
+                help = []
+                help.append('</pre>')
+                continue
+            elif line.strip() == '\b':
+                line = next(line_iter)
+                if not line.strip():
+                    # start of code block
+                    in_pre = True
+                    html_help += '<br>\n'.join(help)
+                    help = []
+                    help.append('<pre>')
+                    continue
+            help.append(escape(line))
+        except StopIteration:
+            break
+
+    html_help += '\n'.join(help) if in_pre else '<br>\n'.join(help)
+    return html_help

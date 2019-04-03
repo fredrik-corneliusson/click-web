@@ -21,8 +21,10 @@ def _click_to_tree(ctx: click.Context, node: click.BaseCommand, ancestors=[]):
     res['is_group'] = isinstance(node, click.core.MultiCommand)
     if res['is_group']:
         # a group, recurse for every child
-        for key in node.list_commands(ctx):
-            child = node.get_command(ctx, key)
+        children = [node.get_command(ctx, key) for key in node.list_commands(ctx)]
+        # Sort so commands comes before groups
+        children = sorted(children, key=lambda c: isinstance(c, click.core.MultiCommand))
+        for child in children:
             res_childs.append(_click_to_tree(ctx, child, ancestors[:] + [node, ]))
 
     res['name'] = node.name

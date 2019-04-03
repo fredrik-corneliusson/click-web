@@ -20,9 +20,9 @@
         <ul>
             <ul>
                 {%- for command in tree.childs recursive %}
-                    <li title="{{ command.help }}">
+                    <li title="{{ command.help|replace('\b', '')|escape }}">
                         {% if not command.is_group %}
-                            <a title="{{ command.help }}"
+                            <a title="{{ command.help|replace('\b', '')|escape }}"
                                href="javascript: openCommand('{{ command.path }}', true);">{{ command.name }}</a>
 {#                            &ndash; {{ command.short_help }}#}
                         {% else %}

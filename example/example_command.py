@@ -41,7 +41,6 @@ def unicode_test(unicode_msg):
     This helptext contains html and <b>should be escaped</b> so the actual tag should be showing.
 
     \b
-
     This is a help block
     this should be displayed without reformat.
 

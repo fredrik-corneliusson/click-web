@@ -97,14 +97,12 @@ def _process_help(help_text):
                 help.append('</pre>')
                 continue
             elif line.strip() == '\b':
-                line = next(line_iter)
-                if not line.strip():
-                    # start of code block
-                    in_pre = True
-                    html_help += '<br>\n'.join(help)
-                    help = []
-                    help.append('<pre>')
-                    continue
+                # start of code block
+                in_pre = True
+                html_help += '<br>\n'.join(help)
+                help = []
+                help.append('<pre>')
+                continue
             help.append(escape(line))
         except StopIteration:
             break

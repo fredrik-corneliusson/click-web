@@ -1,4 +1,5 @@
 import pytest
+
 from click_web import create_click_web_app
 
 _app = None

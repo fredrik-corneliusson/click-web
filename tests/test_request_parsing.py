@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
 import flask
-
 import pytest
+
 from click_web.resources.cmd_exec import RequestToCommandArgs
 
 app = flask.Flask(__name__)

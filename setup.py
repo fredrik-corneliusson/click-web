@@ -12,11 +12,13 @@ requirements = [
     'Jinja2>=2.10'
 ]
 
-testing_requirements = [
+dev_requirements = [
     'pytest>=4.1',
     'flake8>=3.6',
     'beautifulsoup4>=4.7.1',
-    'isort>=4.3.4'
+    'isort>=4.3.4',
+    'twine>=1.12.1',
+    'wheel'
 ]
 
 
@@ -32,10 +34,11 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     zip_safe=False,
+    python_requires='>=3.6',
     install_requires=requirements,
     dependency_links=[],
     extras_require={
-        'testing': testing_requirements
+        'dev': dev_requirements
     },
     classifiers=[
         'Development Status :: 3 - Alpha',

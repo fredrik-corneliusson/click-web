@@ -1,6 +1,5 @@
-from werkzeug.datastructures import MultiDict
-
 import pytest
+from werkzeug.datastructures import MultiDict
 
 
 def test_exec_command(app, client):

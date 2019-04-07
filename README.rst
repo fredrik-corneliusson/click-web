@@ -72,7 +72,7 @@ For an example of how to secure using http digest auth see the example: `auth ex
 Note: There is no permission system and all logged in users can access everything.
 If you plan to deploy in an open environment make sure to setup HTTPS.
 
-.. _auth example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_auth.py
+.. _auth example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_digest_auth.py
 
 
 Unsupported click features

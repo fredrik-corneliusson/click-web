@@ -3,7 +3,9 @@ click-web
 
 Serve click scripts over the web with minimal effort.
 
-*Caution*: No security (login etc.), do not serve scripts publicly.
+*Caution*: If you plan to serve publicly make sure you setup security (SSL, login etc.)
+See `Authentication`_
+
 
 Usage
 -----
@@ -62,6 +64,16 @@ In Bash:
    export FLASK_ENV=development
    export FLASK_APP=app.py
    flask run
+
+Authentication
+==============
+For an example of how to secure using http digest auth see the example: `auth example`_.
+
+Note: There is no permission system and all logged in users can access everything.
+If you plan to deploy in an open environment make sure to setup HTTPS.
+
+.. _auth example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_auth.py
+
 
 Unsupported click features
 ==========================

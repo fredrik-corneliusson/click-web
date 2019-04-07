@@ -9,7 +9,8 @@ with open('README.rst') as f:
 requirements = [
     'click>=7.0',
     'Flask>=1.0',
-    'Jinja2>=2.10'
+    'Jinja2>=2.10',
+    'flask_httpauth>=3.2.4'
 ]
 
 dev_requirements = [
@@ -24,7 +25,7 @@ dev_requirements = [
 
 setup(
     name='click-web',
-    version='0.6.8',
+    version='0.6.9',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',

@@ -67,3 +67,17 @@ input[type=number] {
     margin-bottom: 1em;
     padding: 7px;
 }
+
+.command-selected {
+    font-weight: bold;
+
+}
+
+a:link {
+    text-decoration: none;
+}
+
+a:visited {color: #0000FF}
+a:hover {color:#9090FF}
+a:active {color:#0090FF}
+a:focus {color:#0000FF;}

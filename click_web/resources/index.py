@@ -28,7 +28,9 @@ def _click_to_tree(ctx: click.Context, node: click.BaseCommand, ancestors=[]):
             res_childs.append(_click_to_tree(ctx, child, ancestors[:] + [node, ]))
 
     res['name'] = node.name
-    res['short_help'] = node.get_short_help_str()
+
+    # Do not include any preformatted block (\b) for the short help.
+    res['short_help'] = node.get_short_help_str().split('\b')[0]
     res['help'] = node.help
     path_parts = ancestors + [node]
     res['path'] = '/' + '/'.join(p.name for p in path_parts)

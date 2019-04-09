@@ -1,4 +1,4 @@
-function openCommand(cmdUrl, updateState) {
+function openCommand(cmdUrl, updateState, menuItem) {
     if (REQUEST_RUNNING) {
         let leave = confirm("Command is still running. Leave anyway?");
         if (leave) {
@@ -18,9 +18,19 @@ function openCommand(cmdUrl, updateState) {
     // }
     fetch(cmdUrl)
         .then(function(response) {
+            selectMenuItem(menuItem);
             return response.text();
         })
         .then(function(theFormHtml) {
             formDiv.innerHTML = theFormHtml;
         });
+}
+
+function selectMenuItem(menuItem) {
+    var x = document.getElementsByClassName("command-selected");
+    var i;
+    for (i = 0; i < x.length; i++) {
+        x[i].classList.remove('command-selected');
+    }
+    menuItem.classList.add('command-selected');
 }

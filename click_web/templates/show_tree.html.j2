@@ -23,11 +23,11 @@
                     <li title="{{ command.help|replace('\b', '')|escape }}">
                         {% if not command.is_group %}
                             <a title="{{ command.help|replace('\b', '')|escape }}"
-                               href="javascript: openCommand('{{ command.path }}', true);">{{ command.name }}</a>
+                               href="#" onclick="openCommand('{{ command.path }}', true, this);">{{ command.name }}</a>
 {#                            &ndash; {{ command.short_help }}#}
                         {% else %}
-                            {{ command.name }}
-{#                            &ndash; {{ command.help }}#}
+                            {{ command.name|title }}
+                            <div class="help">&ndash; {{ command.short_help }}</div>
                         {% endif %}
                         {%- if command.childs -%}
                             <ul class="submenu">{{ loop(command.childs) }}</ul>

@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='pure.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='panes.css') }}"/>
+    {%- if config['CUSTOM_CSS'] %}<link rel="stylesheet" href="{{ url_for('custom.static', filename='custom.css') }}"/>{% endif %}
     <script src="{{ url_for('static', filename='split.js') }}"></script>
     <script src="{{ url_for('static', filename='panes.js') }}"></script>
     <script src="{{ url_for('static', filename='open_form.js') }}"></script>

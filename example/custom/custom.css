@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, Verdana, Tahoma;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #999999;
+}
+
+.content {
+    border: 1px solid #C0C0C0;
+    box-shadow: inset 0 1px 2px #e4e4e4;
+    background-color: #AFAFFF;
+    padding: 15px;
+}
+
+.command-header {
+    color: gray;
+    font-size: small;
+}
+
+.help {
+    font-size: small;
+    color: whitesmoke;
+    display: block;
+    margin-left: 10px;
+}
+
+.command-selected {
+    font-weight: normal;
+    font-style: italic;
+    background: lightgray;
+
+}
+
+.script-output {
+    border-color: rgba(0, 255, 0, 0.50);
+    color: lightgreen;
+    background-color: black;
+    display: block;
+    width: fit-content;
+    min-width: 95%;
+    unicode-bidi: embed;
+    font-family: monospace;
+    white-space: pre;
+    margin-bottom: 1em;
+    padding: 7px;
+}

@@ -2,11 +2,14 @@ import tempfile
 from pathlib import Path
 
 import click
+import jinja2
 from flask import Blueprint, Flask
 
 import click_web.resources.cmd_exec
 import click_web.resources.cmd_form
 import click_web.resources.index
+
+jinja_env = jinja2.Environment(extensions=['jinja2.ext.do'])
 
 'The full path to the click script file to execute.'
 script_file = None
@@ -50,6 +53,9 @@ def create_click_web_app(module, command: click.BaseCommand):
     _register(module, command)
 
     _flask_app = Flask(__name__)
+
+    # add the "do" extension needed by our jinja templates
+    _flask_app.jinja_env.add_extension('jinja2.ext.do')
 
     _flask_app.add_url_rule('/', 'index', click_web.resources.index.index)
     _flask_app.add_url_rule('/<path:command_path>', 'command', click_web.resources.cmd_form.get_form_for)

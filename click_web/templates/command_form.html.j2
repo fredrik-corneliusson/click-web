@@ -8,13 +8,19 @@
       onsubmit="return postAndRead('{{ request.url }}');"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
+    {% set command_list = [] %}
     {% for level in levels %}
         <fieldset name="{{ level.command.name }}">
             {% if loop.index == 1 %}
                 {# do not print root command as it most likely is juse "cli" #}
                 <legend class="command-header"></legend>
+            {% elif not level.fields %}
+                {# It is just a command group without any options do not create it's own section #}
+                {% do command_list.append(level.command.name) %}
             {% else %}
-                <legend class="command-header">{{ level.command.name }}</legend>
+                {% do command_list.append(level.command.name) %}
+                <legend class="command-header">{{ command_list | join('&ensp;/&ensp;') }}</legend>
+                {% do command_list.clear() %}
             {% endif %}
 
             {% for field in level.fields %}

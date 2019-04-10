@@ -1,3 +1,5 @@
+/* An example of how to override the default css used by click-web */
+
 body {
     font-family: Arial, Verdana, Tahoma;
     font-size: 16px;
@@ -18,14 +20,18 @@ body {
     font-size: small;
 }
 
-.help {
+.command-tree .help:before {
+    content: "";
+}
+
+.command-tree .help {
     font-size: small;
     color: whitesmoke;
     display: block;
-    margin-left: 10px;
+    margin-left: 0px;
 }
 
-.command-selected {
+.command-tree .command-selected {
     font-weight: normal;
     font-style: italic;
     background: lightgray;

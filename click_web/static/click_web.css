@@ -68,7 +68,17 @@ input[type=number] {
     padding: 7px;
 }
 
-.command-selected {
+.command-tree {
+}
+
+.command-tree .help:before {
+    content:" – ";
+}
+.command-tree .help {
+    margin-left: 0px;
+}
+
+.command-tree .command-selected {
     font-weight: bold;
 
 }

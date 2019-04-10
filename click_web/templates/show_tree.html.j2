@@ -3,9 +3,10 @@
 <head>
     <title>{{ tree.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='pure.css') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='panes.css') }}"/>
-    {%- if config['CUSTOM_CSS'] %}<link rel="stylesheet" href="{{ url_for('custom.static', filename='custom.css') }}"/>{% endif %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='click_web.css') }}"/>
+    {%- if config['CUSTOM_CSS'] %}
+        <link rel="stylesheet" href="{{ url_for('custom.static', filename=config['CUSTOM_CSS']) }}"/>{% endif %}
     <script src="{{ url_for('static', filename='split.js') }}"></script>
     <script src="{{ url_for('static', filename='panes.js') }}"></script>
     <script src="{{ url_for('static', filename='open_form.js') }}"></script>
@@ -15,20 +16,20 @@
 </head>
 <body>
 
-    <div class="split content split-horizontal" id="left-pane">
+<div class="split content split-horizontal" id="left-pane">
+    <div class="command-tree" id="command-tree">
         <h3>{{ tree.help }}</h3>
 
         <ul>
             <ul>
                 {%- for command in tree.childs recursive %}
                     <li title="{{ command.help|replace('\b', '')|escape }}">
-                        {% if not command.is_group %}
+                        {% if command.is_group %}
+                            {{ command.name|title }}
+                            <div class="help">{{ command.short_help }}</div>
+                        {% else %}
                             <a title="{{ command.help|replace('\b', '')|escape }}"
                                href="#" onclick="openCommand('{{ command.path }}', true, this);">{{ command.name }}</a>
-{#                            &ndash; {{ command.short_help }}#}
-                        {% else %}
-                            {{ command.name|title }}
-                            <div class="help">&ndash; {{ command.short_help }}</div>
                         {% endif %}
                         {%- if command.childs -%}
                             <ul class="submenu">{{ loop(command.childs) }}</ul>
@@ -38,13 +39,14 @@
 
         </ul>
     </div>
-    {#    <div class="panes-separator" id="panes-separator"></div>#}
-    <div class="split content split-horizontal" id="right-pane">
+</div>
 
-        <div id="form-div">
-            <p>Select a command in left pane.</p>
-        </div>
+<div class="split content split-horizontal" id="right-pane">
+
+    <div id="form-div">
+        <p>Select a command in left pane.</p>
     </div>
+</div>
 
 </body>
 </html>

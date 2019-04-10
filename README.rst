@@ -67,12 +67,18 @@ In Bash:
 
 Authentication
 ==============
-For an example of how to secure using http digest auth see the example: `auth example`_.
+For an example of how to secure using http digest auth see the `auth example`_.
 
 Note: There is no permission system and all logged in users can access everything.
 If you plan to deploy in an open environment make sure to setup HTTPS.
 
 .. _auth example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_digest_auth.py
+
+Custom Styling
+==============
+For an example of how to customize styling using CSS see the `custom css example`_.
+
+.. _custom css example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_custom_css.py
 
 
 Unsupported click features

@@ -4,22 +4,44 @@ body {
     font-weight: 400;
     line-height: 1.429;
     color: rgba(0, 0, 0, 0.87);
-    background-color: #FFF;
-    /*margin: 10px;*/
+}
+
+.command-tree {
+}
+
+.command-tree .help:before {
+    content: " – ";
+}
+
+.command-tree .help {
+    margin-left: 0px;
+}
+
+.command-tree .command-selected {
+    font-weight: bold;
+
 }
 
 h1 {
     color: rgba(0, 0, 0, 0.54);
 }
 
-.command-help {
-    /*color: gray;*/
-    font-size: large;
-    /*padding: 10px;*/
+.command-title {
+    margin-top: 1px;
 }
 
-.command-header {
-    color: gray;
+.command-title-parents {
+    margin-bottom: 1px;
+    font-size: small;
+    color: rgba(0, 0, 0, 0.50);
+}
+
+.command-help {
+    font-size: large;
+}
+
+.pure-form .command-header {
+    color: rgba(0, 0, 0, 0.60);
     font-size: small;
 }
 
@@ -28,11 +50,6 @@ h1 {
     color: gray;
     display: inline;
     margin-left: 10px;
-}
-
-.click-web-form {
-    /*background-color: powderblue;*/
-    /*padding: 10px;*/
 }
 
 input[type=number] {
@@ -68,26 +85,22 @@ input[type=number] {
     padding: 7px;
 }
 
-.command-tree {
-}
-
-.command-tree .help:before {
-    content:" – ";
-}
-.command-tree .help {
-    margin-left: 0px;
-}
-
-.command-tree .command-selected {
-    font-weight: bold;
-
-}
-
 a:link {
     text-decoration: none;
 }
 
-a:visited {color: #0000FF}
-a:hover {color:#9090FF}
-a:active {color:#0090FF}
-a:focus {color:#0000FF;}
+a:visited {
+    color: #0000FF
+}
+
+a:hover {
+    color: #9090FF
+}
+
+a:active {
+    color: #0090FF
+}
+
+a:focus {
+    color: #0000FF;
+}

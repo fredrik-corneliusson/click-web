@@ -1,5 +1,6 @@
 {% import 'form_macros.html.j2' as macros %}
-<h1>{{ command.name|title }}</h1>
+<div class="command-title-parents">{{ levels[1:-1]| join(' - ', attribute='command.name')|title }}</div>
+<h1 class="command-title">{{ command.name|title }}</h1>
 <div class="command-help">{{ command.html_help }}</div>
 
 <form id="inputform"
@@ -19,7 +20,7 @@
                 {% do command_list.append(level.command.name) %}
             {% else %}
                 {% do command_list.append(level.command.name) %}
-                <legend class="command-header">{{ command_list | join('&ensp;/&ensp;') }}</legend>
+                <legend class="command-header">{{ command_list | join('&ensp;') }}</legend>
                 {% do command_list.clear() %}
             {% endif %}
 

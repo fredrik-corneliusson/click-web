@@ -21,23 +21,21 @@
         <h3>{{ tree.help }}</h3>
 
         <ul>
-            <ul>
-                {%- for command in tree.childs recursive %}
-                    <li title="{{ command.help|replace('\b', '')|escape }}">
-                        {% if command.is_group %}
-                            {{ command.name|title }}
-                            <div class="help">{{ command.short_help }}</div>
-                        {% else %}
-                            <a title="{{ command.help|replace('\b', '')|escape }}"
-                               href="#" onclick="openCommand('{{ command.path }}', true, this);">{{ command.name }}</a>
-                        {% endif %}
-                        {%- if command.childs -%}
-                            <ul class="submenu">{{ loop(command.childs) }}</ul>
-                        {%- endif %}</li>
-                {%- endfor %}
-            </ul>
-
+            {%- for command in tree.childs recursive %}
+                <li title="{{ command.help|replace('\b', '')|escape }}">
+                    {% if command.is_group %}
+                        {{ command.name|title }}
+                        <div class="help">{{ command.short_help }}</div>
+                    {% else %}
+                        <a title="{{ command.help|replace('\b', '')|escape }}"
+                           href="#" onclick="openCommand('{{ command.path }}', true, this);">{{ command.name }}</a>
+                    {% endif %}
+                    {%- if command.childs -%}
+                        <ul class="submenu">{{ loop(command.childs) }}</ul>
+                    {%- endif %}</li>
+            {%- endfor %}
         </ul>
+
     </div>
 </div>
 

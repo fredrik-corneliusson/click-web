@@ -104,8 +104,7 @@ class BaseInput:
     @property
     def type_attrs(self) -> dict:
         """
-        Here the input type and type specific information should be retuned as a dict
-        :return:
+        Return the input type and type specific information as dict
         """
         raise NotImplementedError()
 
@@ -115,7 +114,7 @@ class BaseInput:
     def _build_name(self, name: str):
         """
         Construct a name to use for field in form that have information about
-        what sub-command it belongs order index (for later sorting) and type of parameter.
+        what sub-command it belongs to, order index (for later sorting) and type of parameter.
         """
         # get the type of param to encode the in the name
         if self.param.param_type_name == 'option':
@@ -126,8 +125,8 @@ class BaseInput:
         click_type = self.type_attrs['click_type']
         form_type = self.type_attrs['type']
 
-        # in order for form to be have arguments for sub commands we need to add the
-        # index of the command the argument belongs to
+        # in order for the form to have arguments for sub commands we need to add the
+        # index of the command the argument it belongs to.
         return str(FieldId(self.command_index,
                            self.param_index,
                            param_type,
@@ -273,8 +272,8 @@ class DefaultInput(BaseInput):
 
 
 '''
-The types of inputs we support form inputs listed in priority order (first that matches will be selected).
-To add new Input handling for html forms for custom Parameter types just Subclass BaseInput and insert
+The types of inputs we support. Form inputs listed in priority order, first that matches will be selected.
+To add new Input handling in html forms for custom Parameter types just Subclass BaseInput and insert
 the class in the list.
 '''
 INPUT_TYPES = [ChoiceInput,

@@ -5,8 +5,8 @@
 
 <form id="inputform"
       method="post"
-      action="{{ request.url }}"
-      onsubmit="return postAndRead('{{ request.url }}');"
+      action="{{ request.path }}"
+      onsubmit="return postAndRead('{{ request.path }}');"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
     {% set command_list = [] %}

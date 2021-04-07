@@ -63,7 +63,7 @@ def exec(command_path):
             yield '<pre class="script-output">'
         try:
             if use_html:
-                yield from (escape(l) for l in _run_script_and_generate_stream(req_to_args, cmd))
+                yield from (escape(line) for line in _run_script_and_generate_stream(req_to_args, cmd))
             else:
                 yield from _run_script_and_generate_stream(req_to_args, cmd)
         except Exception as e:

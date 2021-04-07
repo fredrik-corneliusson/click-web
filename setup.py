@@ -7,25 +7,25 @@ with open('README.rst') as f:
     LONG_DESCRIPTION = f.read()
 
 requirements = [
-    'click>=7.0',
-    'Flask>=1.0',
-    'Jinja2>=2.10',
+    'click>=7.1',
+    'Flask>=1.1',
+    'Jinja2>=2.11',
     'flask_httpauth>=3.2.4'
 ]
 
 dev_requirements = [
-    'pytest>=4.1',
-    'flake8>=3.6',
-    'beautifulsoup4>=4.7.1',
-    'isort>=4.3.4',
-    'twine>=1.12.1',
+    'pytest>=6.2',
+    'flake8>=3.9',
+    'beautifulsoup4>=4.9',
+    'isort>=5.8',
+    'twine>=3.4',
     'wheel'
 ]
 
 
 setup(
     name='click-web',
-    version='0.7.1',
+    version='0.7.2',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',

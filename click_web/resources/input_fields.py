@@ -80,7 +80,7 @@ class BaseInput:
 
         field['param'] = param.param_type_name
         if param.param_type_name == 'option':
-            name = '--{}'.format(self._to_cmd_line_name(param.name))
+            name = self._to_cmd_line_name(param.opts[0])
             field['value'] = param.default if param.default else ''
             field['checked'] = 'checked="checked"' if param.default else ''
             field['desc'] = param.help

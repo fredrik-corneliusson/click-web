@@ -11,10 +11,13 @@
     <script src="{{ url_for('static', filename='panes.js') }}"></script>
     <script src="{{ url_for('static', filename='open_form.js') }}"></script>
     <script src="{{ url_for('static', filename='post_and_read.js') }}"></script>
+    <script src="{{ url_for('static', filename='copy_to_clipboard.js') }}"></script>
 
 
 </head>
 <body>
+
+{% include "head.html.j2" ignore missing %}
 
 <div class="split content split-horizontal" id="left-pane">
     <div class="command-tree" id="command-tree">

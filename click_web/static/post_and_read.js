@@ -41,6 +41,8 @@ class ExecuteAndProcessOutput {
         this.commandUrl = commandPath;
         this.decoder = new TextDecoder('utf-8');
         this.output_header_div = document.getElementById("output-header")
+        this.output_wrapper_div = document.getElementById("output-wrapper")
+        this.output_copy_button = document.getElementById("output-copy-button")
         this.output_div = document.getElementById("output")
         this.output_footer_div = document.getElementById("output-footer")
         // clear old content
@@ -49,7 +51,8 @@ class ExecuteAndProcessOutput {
         this.output_footer_div.innerHTML = '';
         // show script output
         this.output_header_div.hidden = false;
-        this.output_div.hidden = false;
+        this.output_wrapper_div.hidden = false;
+        this.output_copy_button.hidden = true
         this.output_footer_div.hidden = false;
     }
 
@@ -69,11 +72,14 @@ class ExecuteAndProcessOutput {
             .then(_ => {
                 REQUEST_RUNNING = false
                 submit_btn.disabled = false;
+                this.output_copy_button.hidden = false;
             })
             .catch(error => {
                     console.error(error);
                     REQUEST_RUNNING = false;
                     submit_btn.disabled = false;
+                    this.output_copy_button.hidden = false;
+
                 }
             );
     }

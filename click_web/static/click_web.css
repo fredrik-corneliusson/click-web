@@ -71,7 +71,7 @@ input[type=number] {
     overflow: hidden;
 }
 
-.script-output {
+.script-output-wrapper {
     border: 3px;
     border-style: dashed;
     border-color: rgba(0, 0, 0, 0.30);;
@@ -79,10 +79,20 @@ input[type=number] {
     width: fit-content;
     min-width: 95%;
     unicode-bidi: embed;
-    font-family: monospace;
-    white-space: pre;
     margin-bottom: 1em;
     padding: 7px;
+}
+
+.script-output {
+    font-family: monospace;
+    white-space: pre;
+}
+
+.btn-copy {
+    display: inline-block;
+    overflow: hidden;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    border: none;
 }
 
 a:link {

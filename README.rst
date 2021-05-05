@@ -76,9 +76,9 @@ If you plan to deploy in an open environment make sure to setup HTTPS.
 
 Custom Styling
 ==============
-For an example of how to customize styling using CSS see the `custom css example`_.
+For an example of how to customize styling using CSS and add extra page head or footer see the `custom css example`_.
 
-.. _custom css example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_custom_css.py
+.. _custom example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/custom/app.py
 
 
 Unsupported click features

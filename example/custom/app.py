@@ -9,7 +9,7 @@ from example import example_command
 app = create_click_web_app(example_command, example_command.cli)
 
 # Expect any custom static and template folder to be located in same folder as this script
-# Make custom folder reachable by "custom/static" url path (via a Flask blueprint)
+# Make custom folder reachable by "custom/static" url path and add templates folder
 custom_folder_blueprint = Blueprint('custom', __name__,
                                     static_url_path='/custom/static',
                                     static_folder='static',

@@ -72,11 +72,11 @@ For an example of how to secure using http digest auth see the `auth example`_.
 Note: There is no permission system and all logged in users can access everything.
 If you plan to deploy in an open environment make sure to setup HTTPS.
 
-.. _auth example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/app_with_digest_auth.py
+.. _auth example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/digest_auth/app.py
 
 Custom Styling
 ==============
-For an example of how to customize styling using CSS and add extra page head or footer see the `custom css example`_.
+For an example of how to customize styling using CSS and add extra page head or footer see the `custom example`_.
 
 .. _custom example: https://github.com/fredrik-corneliusson/click-web/blob/master/example/custom/app.py
 
@@ -100,6 +100,6 @@ TODO
 
 Included 3:rd party libraries
 =============================
-`SplitJs`_ - Copyright (c) 2018 Nathan Cahill (MIT license)
+`SplitJs`_ - Copyright (c) 2020 Nathan Cahill (MIT license)
 
 .. _SplitJs: https://github.com/nathancahill/split/blob/master/packages/splitjs/LICENSE.txt

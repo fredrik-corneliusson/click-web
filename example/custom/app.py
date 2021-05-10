@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from flask import Blueprint
 
 from click_web import create_click_web_app

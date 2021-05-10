@@ -71,13 +71,15 @@ input[type=number] {
     overflow: hidden;
 }
 
+
 .script-output-wrapper {
-    border: 3px;
-    border-style: dashed;
-    border-color: rgba(0, 0, 0, 0.30);;
     display: block;
-    min-height: 30px;
     margin-bottom: 1em;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.30);
+    width: fit-content;
+    min-width: 98%;
+    min-height: 30px;
     padding: 7px;
 }
 
@@ -91,6 +93,10 @@ input[type=number] {
     border: none;
     opacity: 0.7;
     padding: .25rem .5rem;
+    position: -webkit-sticky;
+    position: sticky;
+    float: right;
+    top: 0px;
 }
 
 a:link {

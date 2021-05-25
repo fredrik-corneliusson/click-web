@@ -183,6 +183,17 @@ def variadic_args(users):
         click.echo(f"Hi {user}, you are number {i + 1}")
 
 
+@cli.group()
+def error_handling():
+    "Test error handling"
+
+
+@error_handling.command()
+def command_that_raises_error():
+    "A Command that does not exit ok"
+    raise ValueError("Crash!")
+
+
 def add_external_command(USE_MULTI_COMMAND=False):
     """
     Shows an example of how to add external click commands from other modules

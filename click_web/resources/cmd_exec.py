@@ -29,128 +29,136 @@ HTML_TAIL = '''
 '''
 
 
-def exec(command_path):
-    """
-    Execute the command and stream the output from it as response
-    :param command_path:
-    """
-    global logger
-    logger = click_web.logger
+class Executor:
+    def __init__(self):
+        self.returncode = None
 
-    root_command, *commands = command_path.split('/')
-    cmd = [sys.executable,  # run with same python executable we are running with.
-           click_web.script_file]
-    req_to_args = RequestToCommandArgs()
-    # root command_index should not add a command
-    cmd.extend(req_to_args.command_args(0))
-    for i, command in enumerate(commands):
-        cmd.append(command)
-        cmd.extend(req_to_args.command_args(i + 1))
+    def exec(self, command_path):
+        """
+        Execute the command and stream the output from it as response
+        :param command_path:
+        """
+        global logger
+        logger = click_web.logger
 
-    index_location = url_for('.index')
-    current_location = request.path
-    pure_css_location = url_for('static', filename='pure.css')
-    click_web_css_location = url_for('static', filename='click_web.css')
-    text_only = 'text/plain' in request.accept_mimetypes.values()
+        root_command, *commands = command_path.split('/')
+        cmd = [sys.executable,  # run with same python executable we are running with.
+               click_web.script_file]
+        self.arguments = RequestToCommandArgs()
+        # root command_index should not add a command
+        cmd.extend(self.arguments.command_args(0))
+        for i, command in enumerate(commands):
+            cmd.append(command)
+            cmd.extend(self.arguments.command_args(i + 1))
 
-    def _generate_output(use_html: bool):
-        if use_html:
-            yield HTML_HEAD.format(pure_css_location=pure_css_location, click_web_css_location=click_web_css_location)
-            yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
-                   f'<a href="{current_location}">[{current_location}]</a></div>')
-        yield _create_cmd_header(commands)
-        if use_html:
-            yield '<pre class="script-output">'
-        try:
+        index_location = url_for('.index')
+        current_location = request.path
+        pure_css_location = url_for('static', filename='pure.css')
+        click_web_css_location = url_for('static', filename='click_web.css')
+        text_only = 'text/plain' in request.accept_mimetypes.values()
+
+        def _generate_output(use_html: bool):
             if use_html:
-                yield from (escape(line) for line in _run_script_and_generate_stream(req_to_args, cmd))
-            else:
-                yield from _run_script_and_generate_stream(req_to_args, cmd)
-        except Exception as e:
-            # exited prematurely, show the error to user
-            yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
-            yield traceback.format_exc()
-            raise
+                yield HTML_HEAD.format(pure_css_location=pure_css_location,
+                                       click_web_css_location=click_web_css_location)
+                yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
+                       f'<a href="{current_location}">[{current_location}]</a></div>')
+            yield self._create_cmd_header(commands)
+            if use_html:
+                yield '<pre class="script-output">'
+            try:
+                if use_html:
+                    yield from (escape(line) for line in self._run_script_and_generate_stream(cmd))
+                else:
+                    yield from self._run_script_and_generate_stream(cmd)
+            except Exception as e:
+                # exited prematurely, show the error to user
+                yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
+                yield traceback.format_exc()
+                raise
 
-        if use_html:
-            yield '</pre>'
-        yield from _create_result_footer(req_to_args)
-        if use_html:
-            yield HTML_TAIL
+            if use_html:
+                yield '</pre>'
+            yield from self._create_result_footer()
+            if use_html:
+                yield HTML_TAIL
 
-    return Response(_generate_output(use_html=not text_only),
-                    mimetype='text/plain' if text_only else 'text/html')
+        return Response(_generate_output(use_html=not text_only),
+                        mimetype='text/plain' if text_only else 'text/html')
 
+    def _run_script_and_generate_stream(self, cmd: List[str]):
+        """
+        Execute the command the via Popen and yield output
+        """
+        logger.info('Executing: %s', cmd)
+        if not os.environ.get('PYTHONIOENCODING'):
+            # Fix unicode on windows
+            os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
-def _run_script_and_generate_stream(req_to_args: 'RequestToCommandArgs', cmd: List[str]):
-    """
-    Execute the command the via Popen and yield output
-    """
-    logger.info('Executing: %s', cmd)
-    if not os.environ.get('PYTHONIOENCODING'):
-        # Fix unicode on windows
-        os.environ['PYTHONIOENCODING'] = 'UTF-8'
+        process = subprocess.Popen(cmd,
+                                   shell=False,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        logger.info('script running Pid: %d', process.pid)
 
-    process = subprocess.Popen(cmd,
-                               shell=False,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT)
-    logger.info('script running Pid: %d', process.pid)
+        encoding = sys.getdefaultencoding()
+        with process.stdout:
+            for line in iter(process.stdout.readline, b''):
+                yield line.decode(encoding)
 
-    encoding = sys.getdefaultencoding()
-    with process.stdout:
-        for line in iter(process.stdout.readline, b''):
-            yield line.decode(encoding)
+        process.wait()  # wait for the subprocess to exit
+        self.returncode = process.returncode
+        logger.info(f'script finished Pid: {process.pid} Return code: {process.returncode}')
 
-    process.wait()  # wait for the subprocess to exit
-    logger.info('script finished Pid: %d', process.pid)
-    for fi in req_to_args.field_infos:
-        fi.after_script_executed()
+        for fi in self.arguments.field_infos:
+            fi.after_script_executed()
 
+    def _create_cmd_header(self, commands: List[str]):
+        """
+        Generate a command header.
+        Note:
+            here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
+            This way the JS frontend can insert it in the correct place in the DOM.
+        """
 
-def _create_cmd_header(commands: List[str]):
-    """
-    Generate a command header.
-    Note:
-        here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
-        This way the JS frontend can insert it in the correct place in the DOM.
-    """
+        def generate():
+            yield '<!-- CLICK_WEB START HEADER -->'
+            yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
+            yield '<!-- CLICK_WEB END HEADER -->'
 
-    def generate():
-        yield '<!-- CLICK_WEB START HEADER -->'
-        yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
-        yield '<!-- CLICK_WEB END HEADER -->'
+        # important yield this block as one string so it pushed to client in one go.
+        # so the whole block can be treated as html.
+        html_str = '\n'.join(generate())
+        return html_str
 
-    # important yield this block as one string so it pushed to client in one go.
-    # so the whole block can be treated as html.
-    html_str = '\n'.join(generate())
-    return html_str
+    def _create_result_footer(self):
+        """
+        Generate a footer.
+        Note:
+            here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
+            This way the JS frontend can insert it in the correct place in the DOM.
+        """
+        to_download = [fi for fi in self.arguments.field_infos if fi.generate_download_link and fi.link_name]
+        # important yield this block as one string so it pushed to client in one go.
+        # This is so the whole block can be treated as html if JS frontend.
+        lines = []
+        lines.append('<!-- CLICK_WEB START FOOTER -->')
+        if to_download:
+            lines.append('<b>Result files:</b><br>')
+            for fi in to_download:
+                lines.append('<ul> ')
+                lines.append(f'<li>{_get_download_link(fi)}<br>')
+                lines.append('</ul>')
 
+        if self.returncode == 0:
+            lines.append('<div class="script-exit script-exit-ok">Done</div>')
+        else:
+            lines.append(f'<div class="script-exit script-exit-error">'
+                         f'Script exited with error code: {self.returncode}</div>')
 
-def _create_result_footer(req_to_args: 'RequestToCommandArgs'):
-    """
-    Generate a footer.
-    Note:
-        here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
-        This way the JS frontend can insert it in the correct place in the DOM.
-    """
-    to_download = [fi for fi in req_to_args.field_infos if fi.generate_download_link and fi.link_name]
-    # important yield this block as one string so it pushed to client in one go.
-    # This is so the whole block can be treated as html if JS frontend.
-    lines = []
-    lines.append('<!-- CLICK_WEB START FOOTER -->')
-    if to_download:
-        lines.append('<b>Result files:</b><br>')
-        for fi in to_download:
-            lines.append('<ul> ')
-            lines.append(f'<li>{_get_download_link(fi)}<br>')
-            lines.append('</ul>')
-
-    else:
-        lines.append('<b>DONE</b>')
-    lines.append('<!-- CLICK_WEB END FOOTER -->')
-    html_str = '\n'.join(lines)
-    yield html_str
+        lines.append('<!-- CLICK_WEB END FOOTER -->')
+        html_str = '\n'.join(lines)
+        yield html_str
 
 
 def _get_download_link(field_info):

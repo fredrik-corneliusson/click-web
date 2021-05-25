@@ -88,6 +88,18 @@ input[type=number] {
     white-space: pre;
 }
 
+.script-exit {
+    font-weight: bold;
+}
+
+.script-exit-ok {
+    color: green;
+}
+
+.script-exit-error {
+    color: palevioletred;
+}
+
 .btn-copy {
     background: transparent;
     border: none;

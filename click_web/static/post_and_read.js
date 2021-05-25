@@ -59,13 +59,8 @@ class ExecuteAndProcessOutput {
         this.post(this.commandUrl)
             .then(response => {
                 this.form.disabled = true;
-                if (response.body === undefined) {
-                    firefoxFallback(response)
-                    return;
-                } else {
-                    let reader = response.body.getReader();
-                    return this.processStreamReader(reader);
-                }
+                let reader = response.body.getReader();
+                return this.processStreamReader(reader);
             })
             .then(_ => {
                 REQUEST_RUNNING = false
@@ -78,16 +73,6 @@ class ExecuteAndProcessOutput {
 
                 }
             );
-    }
-
-    firefoxFallback(response) {
-        console.log('Firefox < 65 body streams are experimental and not enabled by default.');
-        console.warn('Falling back to reading full response.');
-        response.text()
-            .then(text => this.output_div.innerHTML = text);
-
-        submit_btn.disabled = false;
-
     }
 
     post() {

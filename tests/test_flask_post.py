@@ -68,14 +68,14 @@ def test_exec_with_default_on_flag_option(form_data, expected_msg, app, client):
     'form_data, expected_msg',
     [
         ({},
-         b'Ran command with option: ()'),
+         b'Ran command with option: None'),
 
         (MultiDict([('1.0.option.text.2.text.--an-option', 'a'),
                     ('1.0.option.text.2.text.--an-option', 'b')]),
          b"Ran command with option: (&#x27;a&#x27;, &#x27;b&#x27;)"),
 
         (MultiDict([('1.0.option.text.2.text.--an-option', 'a')]),
-         b"Error: --an-option option requires 2 arguments"),
+         b"Error: Option &#x27;--an-option&#x27; requires 2 arguments"),
 
         (MultiDict([('1.0.option.text.2.text.--an-option', 'a'),
                     ('1.0.option.text.2.text.--an-option', 'b'),

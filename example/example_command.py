@@ -73,7 +73,7 @@ def sub():
 
 @sub.command()
 @click.option("--blubb/--no-blubb", help='set blubb flag')
-@click.option("--email", type=EMAIL_TYPE, help='the emails for user', default='some@thing.xyz', nargs=2)
+@click.option("--email", type=EMAIL_TYPE, help='the emails for user', default=['some@thing.xyz', None], nargs=2)
 @click.argument("user", default="johnny bode")
 def nargs_test(user, blubb, email):
     "Command with nargs option"

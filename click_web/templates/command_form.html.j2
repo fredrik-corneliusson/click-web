@@ -33,8 +33,8 @@
                             <label for="{{ field.name }}">
                                 {{ field.human_readable_name|capitalize }}
                             </label>
-                            {% for arg in range(field.nargs) %}
-                                {{ macros.add_field_input(field) }}
+                            {% for i in range(field.nargs) %}
+                                {{ macros.add_field_input(field, i) }}
                             {% endfor %}
                             <div class="help" style="display: inline-block">
                                 {{ field.desc|default('', true)|capitalize }}</div>

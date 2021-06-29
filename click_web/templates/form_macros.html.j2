@@ -1,4 +1,4 @@
-{% macro add_field_input(field) -%}
+{% macro add_field_input(field, narg) -%}
     {% if field.type == 'option' %}
         {{ add_option_field(field) }}
     {% else %}
@@ -15,7 +15,12 @@
                type="{{ field.type }}"
                 {% if field.step %} step="{{ field.step }}"{% endif %}
                 {% if field.accept %} accept="{{ field.accept }}"{% endif %}
-               value="{{ field.value|default('', true) }}"
+                {# For variadic options with fixed number of args more then 1 then the default value is a
+                   list with the default value for each narg #}
+                {% if field.nargs > 1 %} value="{{ field.value[narg]|default('', true) }}"
+                {# only one option so just use the value set as default #}
+                {% else %} value="{{ field.value|default('', true) }}" {% endif %}
+
                 {{ field.checked }}
                 {{ 'required' if field.required else '' }}
 

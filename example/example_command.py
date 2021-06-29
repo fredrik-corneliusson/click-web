@@ -4,7 +4,7 @@ from pathlib import Path
 
 import click
 
-from click_web.web_click_types import EMAIL_TYPE
+from click_web.web_click_types import EMAIL_TYPE, PASSWORD_TYPE
 
 DEBUG = False
 
@@ -52,10 +52,11 @@ def unicode_test(unicode_msg):
 @cli.command()
 @click.option("--email", type=EMAIL_TYPE, help='the email for user')
 @click.option("--number", type=int, help='a number')
+@click.option("--password", type=PASSWORD_TYPE, help='some secret password')
 @click.argument("user", default="bode")
-def simple_command(user, email, number=None):
+def simple_command(user, email, number=None, password=None):
     "Command with text and number inputs"
-    click.echo(f"Hi {user}, your email was set to: {email} and number is: {number}")
+    click.echo(f"Hi {user}, your email was set to: {email} and number is: {number} and dark secret is: {password}")
 
 
 @cli.command()

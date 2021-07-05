@@ -4,11 +4,10 @@ import subprocess
 import sys
 import tempfile
 import traceback
-from html import escape
 from pathlib import Path
 from typing import List
 
-from flask import Response, request, url_for
+from flask import Response, request
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -51,40 +50,19 @@ class Executor:
             cmd.append(command)
             cmd.extend(self.arguments.command_args(i + 1))
 
-        index_location = url_for('.index')
-        current_location = request.path
-        pure_css_location = url_for('static', filename='pure.css')
-        click_web_css_location = url_for('static', filename='click_web.css')
-        text_only = 'text/plain' in request.accept_mimetypes.values()
-
-        def _generate_output(use_html: bool):
-            if use_html:
-                yield HTML_HEAD.format(pure_css_location=pure_css_location,
-                                       click_web_css_location=click_web_css_location)
-                yield (f'<div class="back-links">Back to <a href="{index_location}">[index]</a>&nbsp;&nbsp;'
-                       f'<a href="{current_location}">[{current_location}]</a></div>')
+        def _generate_output():
             yield self._create_cmd_header(commands)
-            if use_html:
-                yield '<pre class="script-output">'
             try:
-                if use_html:
-                    yield from (escape(line) for line in self._run_script_and_generate_stream(cmd))
-                else:
-                    yield from self._run_script_and_generate_stream(cmd)
+                yield from self._run_script_and_generate_stream(cmd)
             except Exception as e:
                 # exited prematurely, show the error to user
                 yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
                 yield traceback.format_exc()
                 raise
 
-            if use_html:
-                yield '</pre>'
             yield from self._create_result_footer()
-            if use_html:
-                yield HTML_TAIL
 
-        return Response(_generate_output(use_html=not text_only),
-                        mimetype='text/plain' if text_only else 'text/html')
+        return Response(_generate_output(), mimetype='text/plain')
 
     def _run_script_and_generate_stream(self, cmd: List[str]):
         """

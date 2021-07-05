@@ -5,16 +5,6 @@ function postAndRead(commandUrl) {
         return false;
     }
 
-    try {
-        TextDecoder
-    } catch (e) {
-        console.error(e);
-        // Browser missing Text decoder (Edge?)
-        // post form the normal way.
-        return true;
-
-    }
-
     input_form = document.getElementById("inputform");
     let submit_btn = document.getElementById("submit_btn");
 

@@ -72,10 +72,10 @@ def test_exec_with_default_on_flag_option(form_data, expected_msg, app, client):
 
         (MultiDict([('1.0.option.text.2.text.--an-option', 'a'),
                     ('1.0.option.text.2.text.--an-option', 'b')]),
-         b"Ran command with option: (&#x27;a&#x27;, &#x27;b&#x27;)"),
+         b"Ran command with option: (\'a\', \'b\')"),
 
         (MultiDict([('1.0.option.text.2.text.--an-option', 'a')]),
-         b"Error: Option &#x27;--an-option&#x27; requires 2 arguments"),
+         b"Error: Option \'--an-option\' requires 2 arguments."),
 
         (MultiDict([('1.0.option.text.2.text.--an-option', 'a'),
                     ('1.0.option.text.2.text.--an-option', 'b'),
@@ -95,7 +95,7 @@ def test_exec_with_nargs_opts(form_data, expected_msg, app, client):
     'form_data, expected_msg',
     [
         ({},
-         b'<pre class="script-output">'),
+         b'Executing: command-with-variadic-args'),
 
         ({
              '1.1.argument.int.-1.number.an-argument': 'line 1'

@@ -172,8 +172,7 @@ class RequestToCommandArgs:
             # must be called mostly for saving and preparing file output.
             fi.before_script_execute()
 
-            if fi.cmd_opt.startswith('--'):
-                # it's an option
+            if self._is_option(fi.cmd_opt):
                 args.extend(self._process_option(fi))
 
             else:
@@ -198,6 +197,11 @@ class RequestToCommandArgs:
                             logger.info(f'arg_value: "{arg_values}"')
                             args.extend(arg_values)
         return args
+
+    @staticmethod
+    def _is_option(cmd_option):
+        return isinstance(cmd_option, str) and \
+               (cmd_option.startswith('--') or cmd_option.startswith('-'))
 
     def _process_option(self, field_info):
         vals = request.form.getlist(field_info.key)

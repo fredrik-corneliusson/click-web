@@ -3,9 +3,9 @@ click-web
 
 Serve click scripts over the web with minimal effort.
 
-*Caution*: If you plan to serve publicly make sure you setup security (SSL, login etc.)
-See `Authentication`_
-
+.. image:: doc/click-web-example.png
+  :width: 700
+  :alt: Example screenshot
 
 Usage
 -----
@@ -64,6 +64,9 @@ In Bash:
    export FLASK_ENV=development
    export FLASK_APP=app.py
    flask run
+
+*Caution*: If you plan to serve publicly make sure you setup security (SSL, login etc.)
+See `Authentication`_
 
 Authentication
 ==============

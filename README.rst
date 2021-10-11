@@ -3,7 +3,7 @@ click-web
 
 Serve click scripts over the web with minimal effort.
 
-.. image:: doc/click-web-example.png
+.. image:: https://github.com/fredrik-corneliusson/click-web/raw/master/doc/click-web-example.png
   :width: 700
   :alt: Example screenshot
 

@@ -14,16 +14,18 @@ app = flask.Flask(__name__)
         ({
              '0.0.option.text.1.text.--an-option': 'option-value',
              '0.1.option.text.1.text.--another-option': 'another-option-value',
-             '1.0.option.text.1.text.--option-for-other-command': 'some value'
+             '1.0.option.text.1.text.--option-for-other-command': 'some value',
+             '1.1.option.text.1.text.-short-opt': 'short option value'
          }, (['--an-option', 'option-value', '--another-option', 'another-option-value'],
-             ['--option-for-other-command', 'some value']),
+             ['--option-for-other-command', 'some value', "-short-opt", 'short option value']),
         ), # noqa
         (OrderedDict((
                 ('0.1.option.text.1.text.--another-option', 'another-option-value'),
+                ('1.1.option.text.1.text.-short-opt', 'short option value'),
                 ('0.0.option.text.1.text.--an-option', 'option-value'),
                 ('1.0.option.text.1.text.--option-for-other-command', 'some value')
         )), (['--an-option', 'option-value', '--another-option', 'another-option-value'],
-             ['--option-for-other-command', 'some value']),
+             ['--option-for-other-command', 'some value', "-short-opt", 'short option value']),
         ),
     ])
 def test_form_post_to_commandline_arguments(data, expected):

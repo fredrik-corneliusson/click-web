@@ -12,6 +12,7 @@ from werkzeug.utils import secure_filename
 
 import click_web
 
+from ..web_click_types import PasswordParamType
 from .input_fields import FieldId
 
 logger = None
@@ -41,19 +42,12 @@ class Executor:
         logger = click_web.logger
 
         root_command, *commands = command_path.split('/')
-        cmd = [sys.executable,  # run with same python executable we are running with.
-               click_web.script_file]
-        self.arguments = RequestToCommandArgs()
-        # root command_index should not add a command
-        cmd.extend(self.arguments.command_args(0))
-        for i, command in enumerate(commands):
-            cmd.append(command)
-            cmd.extend(self.arguments.command_args(i + 1))
+        self._command_line = CommandLine(click_web.script_file, commands)
 
         def _generate_output():
             yield self._create_cmd_header(commands)
             try:
-                yield from self._run_script_and_generate_stream(cmd)
+                yield from self._run_script_and_generate_stream()
             except Exception as e:
                 # exited prematurely, show the error to user
                 yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
@@ -64,16 +58,16 @@ class Executor:
 
         return Response(_generate_output(), mimetype='text/plain')
 
-    def _run_script_and_generate_stream(self, cmd: List[str]):
+    def _run_script_and_generate_stream(self):
         """
         Execute the command the via Popen and yield output
         """
-        logger.info('Executing: %s', cmd)
+        logger.info('Executing: %s', self._command_line.get_commandline(obfuscate=True))
         if not os.environ.get('PYTHONIOENCODING'):
             # Fix unicode on windows
             os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
-        process = subprocess.Popen(cmd,
+        process = subprocess.Popen(self._command_line.get_commandline(),
                                    shell=False,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -88,10 +82,9 @@ class Executor:
         self.returncode = process.returncode
         logger.info(f'script finished Pid: {process.pid} Return code: {process.returncode}')
 
-        for fi in self.arguments.field_infos:
-            fi.after_script_executed()
+        self._command_line.after_script_executed()
 
-    def _create_cmd_header(self, commands: List[str]):
+    def _create_cmd_header(self, commands: List['CmdPart']):
         """
         Generate a command header.
         Note:
@@ -101,7 +94,7 @@ class Executor:
 
         def generate():
             yield '<!-- CLICK_WEB START HEADER -->'
-            yield '<div class="command-line">Executing: {}</div>'.format('/'.join(commands))
+            yield '<div class="command-line">Executing: {}</div>'.format('/'.join(str(c) for c in commands))
             yield '<!-- CLICK_WEB END HEADER -->'
 
         # important yield this block as one string so it pushed to client in one go.
@@ -116,9 +109,9 @@ class Executor:
             here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
             This way the JS frontend can insert it in the correct place in the DOM.
         """
-        to_download = [fi for fi in self.arguments.field_infos if fi.generate_download_link and fi.link_name]
         # important yield this block as one string so it pushed to client in one go.
         # This is so the whole block can be treated as html if JS frontend.
+        to_download = self._command_line.get_download_field_infos()
         lines = []
         lines.append('<!-- CLICK_WEB START FOOTER -->')
         if to_download:
@@ -147,21 +140,65 @@ def _get_download_link(field_info):
     return f'<a href="{uri}">{field_info.link_name}</a>'
 
 
-class RequestToCommandArgs:
+class CommandLine:
+    def __init__(self, script_file_path: str, commands: List[str]):
+        self._parts: List[CmdPart] = list()
+        # run with same python executable we are running with.
+        self.append(sys.executable)
+        self.append(script_file_path)
 
-    def __init__(self):
+        self.command_line_bulder = FormToCommandLineBuilder(self)
+
+        # root command_index should not add a command
+        self.command_line_bulder.add_command_args(0)
+        for i, command in enumerate(commands):
+            self.append(command)
+            self.command_line_bulder.add_command_args(i + 1)
+
+    def append(self, part: str, secret: bool = False):
+        self._parts.append(CmdPart(part, secret))
+
+    def get_commandline(self, obfuscate: bool = False) -> List[str]:
+        """
+        Return command line as a list of strings.
+        obfuscate - if True secret parts like passwords are replaced with *****. Use for logging etc.
+        """
+        return ['******' if cmd_part.secret and obfuscate else str(cmd_part)
+                for cmd_part in self._parts]
+
+    def get_download_field_infos(self):
+        return [fi for fi in self.command_line_bulder.field_infos
+                if fi.generate_download_link and fi.link_name]
+
+    def after_script_executed(self):
+        """Call this after the command has executed"""
+        for fi in self.command_line_bulder.field_infos:
+            fi.after_script_executed()
+
+
+class CmdPart:
+    def __init__(self, part: str, secret=False):
+        self.part = part
+        self.secret = secret
+
+    def __str__(self):
+        return self.part
+
+
+class FormToCommandLineBuilder:
+
+    def __init__(self, command_line: CommandLine):
+        self.command_line = command_line
         field_infos = [FieldInfo.factory(key) for key in list(request.form.keys()) + list(request.files.keys())]
         # important to sort them so they will be in expected order on command line
         self.field_infos = list(sorted(field_infos))
 
-    def command_args(self, command_index) -> List[str]:
+    def add_command_args(self, command_index):
         """
         Convert the post request into a list of command line arguments
 
         :param command_index: (int) the index for the command to get arguments for.
-        :return: list of command line arguments for command at that cmd_index
         """
-        args = []
 
         # only include relevant fields for this command index
         commands_field_infos = [fi for fi in self.field_infos if fi.param.command_index == command_index]
@@ -173,14 +210,13 @@ class RequestToCommandArgs:
             fi.before_script_execute()
 
             if self._is_option(fi.cmd_opt):
-                args.extend(self._process_option(fi))
-
+                self._process_option(fi)
             else:
                 # argument(s)
                 if isinstance(fi, FieldFileInfo):
                     # it's a file, append the written temp file path
                     # TODO: does file upload support multiple keys? In that case support it.
-                    args.append(fi.file_path)
+                    self.command_line.append(fi.file_path)
                 else:
                     arg_values = request.form.getlist(fi.key)
                     has_values = bool(''.join(arg_values))
@@ -192,11 +228,12 @@ class RequestToCommandArgs:
                             for value in arg_values:
                                 values = value.splitlines()
                                 logger.info(f'variadic arguments, split into: "{values}"')
-                                args.extend(values)
+                                for val in values:
+                                    self.command_line.append(val, secret=fi.param.form_type == 'password')
                         else:
                             logger.info(f'arg_value: "{arg_values}"')
-                            args.extend(arg_values)
-        return args
+                            for val in arg_values:
+                                self.command_line.append(val, secret=fi.param.form_type == 'password')
 
     @staticmethod
     def _is_option(cmd_option):
@@ -208,8 +245,8 @@ class RequestToCommandArgs:
         if field_info.is_file:
             if field_info.link_name:
                 # it's a file, append the file path
-                yield field_info.cmd_opt
-                yield field_info.file_path
+                self.command_line.append(field_info.cmd_opt)
+                self.command_line.append(field_info.file_path)
         elif field_info.param.param_type == 'flag':
             # To work with flag that is default True a hidden field with same name is also sent by form.
             # This is to detect if checkbox was not checked as then we will get the field anyway with the "off flag"
@@ -222,15 +259,15 @@ class RequestToCommandArgs:
                 on_flag = vals[1]
                 flag_on_cmd_line = on_flag
 
-            yield flag_on_cmd_line
+            self.command_line.append(flag_on_cmd_line)
         elif ''.join(vals):
             # opt with value, if option was given multiple times get the values for each.
             # flag options should always be set if we get them
             # for normal options they must have a non empty value
-            yield field_info.cmd_opt
+            self.command_line.append(field_info.cmd_opt)
             for val in vals:
                 if val:
-                    yield val
+                    self.command_line.append(val, secret=field_info.param.form_type == 'password')
         else:
             # option with empty values, should not be added to command line.
             pass
@@ -358,7 +395,7 @@ class FieldOutFileInfo(FieldFileInfo):
         super().__init__(fimeta)
         if self.param.form_type == 'text':
             self.link_name = request.form[self.key]
-            # set the postfix to name name provided from form
+            # set the postfix to name provided from form
             # this way it will at least have the same extension when downloaded
             self.file_suffix = request.form[self.key]
         else:

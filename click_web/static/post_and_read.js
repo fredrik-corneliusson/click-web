@@ -8,7 +8,6 @@ function postAndRead(commandUrl) {
     input_form = document.getElementById("inputform");
     let submit_btn = document.getElementById("submit_btn");
 
-
     try {
         REQUEST_RUNNING = true;
         submit_btn.disabled = true;

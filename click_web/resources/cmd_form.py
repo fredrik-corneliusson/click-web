@@ -22,7 +22,7 @@ def get_form_for(command_path: str):
                            command_path=command_path)
 
 
-def _get_commands_by_path(command_path: str) -> Tuple[click.Context, click.Command]:
+def _get_commands_by_path(command_path: str) -> List[Tuple[click.Context, click.Command]]:
     """
     Take a (slash separated) string and generate (context, command) for each level.
     :param command_path: "some_group/a_command"
@@ -32,7 +32,7 @@ def _get_commands_by_path(command_path: str) -> Tuple[click.Context, click.Comma
     command_name, *command_path_items = command_path_items
     command = click_web.click_root_cmd
     if command.name != command_name:
-        raise CommandNotFound('Failed to find root command {}. There is a root commande named:{}'
+        raise CommandNotFound('Failed to find root command {}. There is a root command named:{}'
                               .format(command_name, command.name))
     result = []
     with click.Context(command, info_name=command, parent=None) as ctx:
@@ -79,7 +79,7 @@ def _process_help(help_text):
     :param help_text: str
     :return: A html formatted help string.
     """
-    help = []
+    help_ = []
     in_pre = False
     html_help = ''
     if not help_text:
@@ -92,20 +92,18 @@ def _process_help(help_text):
             if in_pre and not line.strip():
                 # end of code block
                 in_pre = False
-                html_help += '\n'.join(help)
-                help = []
-                help.append('</pre>')
+                html_help += '\n'.join(help_)
+                help_ = ['</pre>']
                 continue
             elif line.strip() == '\b':
                 # start of code block
                 in_pre = True
-                html_help += '<br>\n'.join(help)
-                help = []
-                help.append('<pre>')
+                html_help += '<br>\n'.join(help_)
+                help_ = ['<pre>']
                 continue
-            help.append(escape(line))
+            help_.append(escape(line))
         except StopIteration:
             break
 
-    html_help += '\n'.join(help) if in_pre else '<br>\n'.join(help)
+    html_help += '\n'.join(help_) if in_pre else '<br>\n'.join(help_)
     return html_help

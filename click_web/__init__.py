@@ -32,7 +32,7 @@ logger = None
 
 
 def create_click_web_app(module, command: click.BaseCommand):
-    '''
+    """
     Create a Flask app that wraps a click command. (Call once)
 
     :param module: the module that contains the click command, needed to get the path to the script.
@@ -46,7 +46,7 @@ def create_click_web_app(module, command: click.BaseCommand):
 
         app = create_click_web_app(a_click_script, a_click_script.a_group_or_command)
 
-    '''
+    """
     global _flask_app, logger
     assert _flask_app is None, "Flask App already created."
 
@@ -73,12 +73,12 @@ def create_click_web_app(module, command: click.BaseCommand):
 
 
 def _register(module, command: click.BaseCommand):
-    '''
+    """
 
     :param module: the module that contains the command, needed to get the path to the script.
     :param command: The actual click root command, needed to be able to read the command tree and arguments
                     in order to generate the index page and the html forms
-    '''
+    """
     global click_root_cmd, script_file
     script_file = str(Path(module.__file__).absolute())
     click_root_cmd = command

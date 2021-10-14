@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Union
 
 import click
 from flask import render_template
@@ -11,11 +12,11 @@ def index():
         return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
 
 
-def _click_to_tree(ctx: click.Context, node: click.BaseCommand, ancestors=[]):
-    '''
+def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors=[]):
+    """
     Convert a click root command to a tree of dicts and lists
     :return: a json like tree
-    '''
+    """
     res_childs = []
     res = OrderedDict()
     res['is_group'] = isinstance(node, click.core.MultiCommand)

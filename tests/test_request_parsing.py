@@ -3,7 +3,7 @@ from collections import OrderedDict
 import flask
 import pytest
 
-from click_web.resources.cmd_exec import CommandLine, FormToCommandLineBuilder
+from click_web.resources.cmd_exec import CommandLine
 
 app = flask.Flask(__name__)
 

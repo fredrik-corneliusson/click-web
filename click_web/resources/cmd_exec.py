@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -5,17 +6,16 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from flask import Response, request
 from werkzeug.utils import secure_filename
 
 import click_web
 
-from ..web_click_types import PasswordParamType
 from .input_fields import FieldId
 
-logger = None
+logger: Union[logging.Logger, None] = None
 
 HTML_HEAD = '''<!doctype html>
 <html lang="en">
@@ -32,6 +32,7 @@ HTML_TAIL = '''
 class Executor:
     def __init__(self):
         self.returncode = None
+        self._command_line = None
 
     def exec(self, command_path):
         """
@@ -112,8 +113,7 @@ class Executor:
         # important yield this block as one string so it pushed to client in one go.
         # This is so the whole block can be treated as html if JS frontend.
         to_download = self._command_line.get_download_field_infos()
-        lines = []
-        lines.append('<!-- CLICK_WEB START FOOTER -->')
+        lines = ['<!-- CLICK_WEB START FOOTER -->']
         if to_download:
             lines.append('<b>Result files:</b><br>')
             for fi in to_download:
@@ -193,7 +193,7 @@ class FormToCommandLineBuilder:
         # important to sort them so they will be in expected order on command line
         self.field_infos = list(sorted(field_infos))
 
-    def add_command_args(self, command_index):
+    def add_command_args(self, command_index: int):
         """
         Convert the post request into a list of command line arguments
 
@@ -227,11 +227,9 @@ class FormToCommandLineBuilder:
                             # treat each line we get from text area as a separate argument.
                             for value in arg_values:
                                 values = value.splitlines()
-                                logger.info(f'variadic arguments, split into: "{values}"')
                                 for val in values:
                                     self.command_line.append(val, secret=fi.param.form_type == 'password')
                         else:
-                            logger.info(f'arg_value: "{arg_values}"')
                             for val in arg_values:
                                 self.command_line.append(val, secret=fi.param.form_type == 'password')
 
@@ -325,7 +323,7 @@ class FieldInfo:
         return str(self.param)
 
     def __lt__(self, other):
-        "Make class sortable"
+        # Make class sortable
         return (self.param.command_index, self.param.param_index) < \
                (other.param.command_index, other.param.param_index)
 
@@ -347,6 +345,7 @@ class FieldFileInfo(FieldInfo):
         self.mode = self.param.click_type.split('[')[1][:-1]
         self.generate_download_link = True if 'w' in self.mode else False
         self.link_name = f'{self.cmd_opt}.out'
+        self.file_path = None
 
         logger.info(f'File mode for {self.key} is {self.mode}')
 
@@ -379,9 +378,7 @@ class FieldFileInfo(FieldInfo):
             file.save(filename)
 
     def __str__(self):
-
-        res = [super().__str__()]
-        res.append(f'file_path: {self.file_path}')
+        res = [super().__str__(), f'file_path: {self.file_path}']
         return ', '.join(res)
 
 

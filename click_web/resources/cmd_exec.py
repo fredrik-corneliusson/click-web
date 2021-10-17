@@ -424,13 +424,7 @@ class FieldPathInfo(FieldFileInfo):
 
     def after_script_executed(self):
         super().after_script_executed()
-        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
-        folder_path = self.file_path
-        self.file_path = filename
-
-        logger.info(f'Zipping {self.key} to {filename}')
-        self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
-        logger.info(f'Zip file created {self.file_path}')
+        self.file_path = zip_folder(self.file_path, self.temp_dir(), out_prefix=self.key)
         self.generate_download_link = True
 
 
@@ -447,10 +441,13 @@ class FieldPathOutInfo(FieldOutFileInfo):
 
     def after_script_executed(self):
         super().after_script_executed()
-        fd, filename = tempfile.mkstemp(dir=self.temp_dir(), prefix=self.key)
-        folder_path = self.file_path
-        self.file_path = filename
-        logger.info(f'Zipping {self.key} to {filename}')
-        self.file_path = shutil.make_archive(self.file_path, 'zip', folder_path)
-        logger.info(f'Zip file created {self.file_path}')
+        self.file_path = zip_folder(self.file_path, self.temp_dir(), out_prefix=self.key)
         self.generate_download_link = True
+
+
+def zip_folder(folder_path, out_folder, out_prefix):
+    fd, out_base_name = tempfile.mkstemp(dir=out_folder, prefix=out_prefix)
+    logger.info(f'Zipping {folder_path}')
+    zip_file_path = shutil.make_archive(out_base_name, 'zip', folder_path)
+    logger.info(f'Zip file created {zip_file_path}')
+    return zip_file_path

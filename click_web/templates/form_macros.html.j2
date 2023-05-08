@@ -10,22 +10,31 @@
             https://stackoverflow.com/a/1992745/1306577 #}
             <input name="{{ field.name }}" type='hidden' value='{{ field.off_flag }}'>
         {% endif %}
-        <input name="{{ field.name }}"
-               id="{{ field.name }}"
-               type="{{ field.type }}"
-                {% if field.step %} step="{{ field.step }}"{% endif %}
-                {% if field.accept %} accept="{{ field.accept }}"{% endif %}
-                {# For variadic options with fixed number of args more then 1 then the default value is a
-                   list with the default value for each narg #}
-                {% if field.nargs > 1 %} value="{{ field.value[narg]|default('', true) }}"
-                {# only one option so just use the value set as default #}
-                {% else %} value="{{ field.value|default('', true) }}" {% endif %}
+        {% if field.type == "textarea"  %}
+            <textarea name="{{ field.name }}"
+                      id="{{ field.name }}"
+                      cols="80" rows="7"
+                      {{ 'required' if field.required else '' }}
+                        >{{ field.value|default('', true) }}</textarea>
+        {% else %}
 
-                {{ field.checked }}
-                {{ 'required' if field.required else '' }}
+            <input name="{{ field.name }}"
+                   id="{{ field.name }}"
+                   type="{{ field.type }}"
+                    {% if field.step %} step="{{ field.step }}"{% endif %}
+                    {% if field.accept %} accept="{{ field.accept }}"{% endif %}
+                    {# For variadic options with fixed number of args more then 1 then the default value is a
+                       list with the default value for each narg #}
+                    {% if field.nargs > 1 %} value="{{ field.value[narg]|default('', true) }}"
+                    {# only one option so just use the value set as default #}
+                    {% else %} value="{{ field.value|default('', true) }}" {% endif %}
+
+                    {{ field.checked }}
+                    {{ 'required' if field.required else '' }}
 
 
-        >
+            >
+        {% endif %}
     {% endif %}
 
 {%- endmacro %}

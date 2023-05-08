@@ -4,7 +4,7 @@ from pathlib import Path
 
 import click
 
-from click_web.web_click_types import EMAIL_TYPE, PASSWORD_TYPE
+from click_web.web_click_types import EMAIL_TYPE, PASSWORD_TYPE, TEXTAREA_TYPE
 
 DEBUG = False
 
@@ -57,6 +57,16 @@ def unicode_test(unicode_msg):
 def simple_command(user, email, number=None, password=None):
     "Command with text and number inputs"
     click.echo(f"Hi {user}, your email was set to: {email} and number is: {number} and dark secret is: {password}")
+
+
+@cli.command()
+@click.option("--long-text", type=TEXTAREA_TYPE, help='A long input text',
+              default="Some very very\nloooooong text \n" * 3)
+@click.option("--long-text-again", type=TEXTAREA_TYPE)
+@click.argument("user", default="bode")
+def textarea_command(user, long_text, long_text_again):
+    "Command with text and number inputs"
+    click.echo(f"Hi {user}, your long-text was set to: {long_text}")
 
 
 @cli.command()

@@ -143,8 +143,7 @@ def _get_download_link(field_info):
 class CommandLine:
     def __init__(self, script_file_path: str, commands: List[str]):
         self._parts: List[CmdPart] = list()
-        # run with same python executable we are running with.
-        self.append(sys.executable)
+        self.append(_get_python_interpreter())
         self.append(script_file_path)
 
         self.command_line_bulder = FormToCommandLineBuilder(self)
@@ -174,6 +173,16 @@ class CommandLine:
         """Call this after the command has executed"""
         for fi in self.command_line_bulder.field_infos:
             fi.after_script_executed()
+
+
+def _get_python_interpreter():
+    if sys.executable.endswith("uwsgi"):
+        import uwsgi
+        python_interpreter = str((Path(uwsgi.opt.get("virtualenv").decode()) / "bin"/ "python").absolute())
+    else:
+        # run with same python executable we are running with.
+        python_interpreter = sys.executable
+    return python_interpreter
 
 
 class CmdPart:

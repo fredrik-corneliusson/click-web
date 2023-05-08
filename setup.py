@@ -25,7 +25,7 @@ dev_requirements = [
 
 setup(
     name='click-web',
-    version='0.8.0',
+    version='0.8.1',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',

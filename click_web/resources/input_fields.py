@@ -1,6 +1,7 @@
 import click
 
-from click_web.web_click_types import EmailParamType, PasswordParamType
+from click_web.web_click_types import (EmailParamType, PasswordParamType,
+                                       TextAreaParamType)
 
 
 class FieldId:
@@ -271,6 +272,17 @@ class PasswordInput(BaseInput):
         return type_attrs
 
 
+class TextAreaInput(BaseInput):
+    param_type_cls = TextAreaParamType
+
+    @property
+    def type_attrs(self):
+        type_attrs = {}
+        type_attrs['type'] = 'textarea'
+        type_attrs['click_type'] = 'textarea'
+        return type_attrs
+
+
 class DefaultInput(BaseInput):
     param_type_cls = click.ParamType
 
@@ -294,7 +306,8 @@ INPUT_TYPES = [ChoiceInput,
                FolderInput,
                FileInput,
                EmailInput,
-               PasswordInput]
+               PasswordInput,
+               TextAreaInput]
 
 _DEFAULT_INPUT = [DefaultInput]
 

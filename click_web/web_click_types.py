@@ -35,5 +35,13 @@ class PasswordParamType(click.ParamType):
         return value
 
 
+class TextAreaParamType(click.ParamType):
+    name = "textarea"
+
+    def convert(self, value, param, ctx):
+        return value
+
+
 EMAIL_TYPE = EmailParamType()
 PASSWORD_TYPE = PasswordParamType()
+TEXTAREA_TYPE = TextAreaParamType()

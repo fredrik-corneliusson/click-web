@@ -12,7 +12,7 @@ def index():
         return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
 
 
-def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors: list=None):
+def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors: list = None):
     """
     Convert a click root command to a tree of dicts and lists
     :return: a json like tree

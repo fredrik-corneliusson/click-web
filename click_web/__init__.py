@@ -53,7 +53,8 @@ def create_click_web_app(module, command: click.BaseCommand, root='/'):
 
     _register(module, command)
 
-    _flask_app = Flask(__name__)
+    _flask_app = Flask(__name__, static_url_path=root.rstrip('/') + '/static')
+
     _flask_app.config['APPLICATION_ROOT'] = root
     root = root.rstrip('/')
 

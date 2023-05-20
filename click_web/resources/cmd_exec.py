@@ -178,7 +178,7 @@ class CommandLine:
 def _get_python_interpreter():
     if sys.executable.endswith("uwsgi"):
         import uwsgi
-        python_interpreter = str((Path(uwsgi.opt.get("virtualenv").decode()) / "bin"/ "python").absolute())
+        python_interpreter = str((Path(uwsgi.opt.get("virtualenv").decode()) / "bin" / "python").absolute())
     else:
         # run with same python executable we are running with.
         python_interpreter = sys.executable
@@ -245,7 +245,7 @@ class FormToCommandLineBuilder:
     @staticmethod
     def _is_option(cmd_option):
         return isinstance(cmd_option, str) and \
-               (cmd_option.startswith('--') or cmd_option.startswith('-'))
+            (cmd_option.startswith('--') or cmd_option.startswith('-'))
 
     def _process_option(self, field_info):
         vals = request.form.getlist(field_info.key)
@@ -334,7 +334,7 @@ class FieldInfo:
     def __lt__(self, other):
         # Make class sortable
         return (self.param.command_index, self.param.param_index) < \
-               (other.param.command_index, other.param.param_index)
+            (other.param.command_index, other.param.param_index)
 
     def __eq__(self, other):
         return self.key == other.key

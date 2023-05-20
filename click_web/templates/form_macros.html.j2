@@ -13,7 +13,7 @@
         {% if field.type == "textarea"  %}
             <textarea name="{{ field.name }}"
                       id="{{ field.name }}"
-                      cols="80" rows="7"
+                      cols="120" rows="10"
                       {{ 'required' if field.required else '' }}
                         >{{ field.value|default('', true) }}</textarea>
         {% else %}

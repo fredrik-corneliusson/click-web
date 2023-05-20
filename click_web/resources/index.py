@@ -12,11 +12,13 @@ def index():
         return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
 
 
-def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors=[]):
+def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors: list=None):
     """
     Convert a click root command to a tree of dicts and lists
     :return: a json like tree
     """
+    if ancestors is None:
+        ancestors = []
     res_childs = []
     res = OrderedDict()
     res['is_group'] = isinstance(node, click.core.MultiCommand)
@@ -34,7 +36,8 @@ def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCom
     res['short_help'] = node.get_short_help_str().split('\b')[0]
     res['help'] = node.help
     path_parts = ancestors + [node]
-    res['path'] = '/' + '/'.join(p.name for p in path_parts)
+    root = click_web._flask_app.config['APPLICATION_ROOT'].rstrip('/')
+    res['path'] = root + '/' + '/'.join(p.name for p in path_parts)
     if res_childs:
         res['childs'] = res_childs
     return res

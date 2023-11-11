@@ -9,7 +9,8 @@ import click_web
 
 def index():
     with click.Context(click_web.click_root_cmd, info_name=click_web.click_root_cmd.name, parent=None) as ctx:
-        return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
+        template_name = click_web._flask_app.config.get("CLICK_WEB_MAIN_TEMPLATE", "show_tree.html.j2")
+        return render_template(template_name, ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
 
 
 def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors: list = None):

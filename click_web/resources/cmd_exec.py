@@ -52,6 +52,7 @@ class Executor:
             for i, dict_item in enumerate(output):
                 if i > 0:
                     yield ','
+                    yield '\n'
                 yield json.dumps(dict_item)
             yield ']'
 

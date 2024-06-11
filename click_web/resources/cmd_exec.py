@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -17,26 +18,14 @@ from .input_fields import FieldId
 
 logger: Union[logging.Logger, None] = None
 
-HTML_HEAD = '''<!doctype html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="{pure_css_location}"/>
-    <link rel="stylesheet" href="{click_web_css_location}"/>
-</head>
-<body>'''
-HTML_TAIL = '''
-</body>
-'''
-
-
 class Executor:
     def __init__(self):
         self.returncode = None
         self._command_line = None
 
-    def exec(self, command_path):
+    def exec_json(self, command_path):
         """
-        Execute the command and stream the output from it as response
+        Execute the command and stream the output as JSON response
         :param command_path:
         """
         global logger
@@ -46,22 +35,32 @@ class Executor:
         self._command_line = CommandLine(click_web.script_file, commands)
 
         def _generate_output():
-            yield self._create_cmd_header(commands)
+            yield {"status": "started",  "message": self._create_cmd_header(commands)}
             try:
-                yield from self._run_script_and_generate_stream()
+                for line in self._run_script_and_generate_stream():
+                    yield {"status": "running", "message": line}
             except Exception as e:
                 # exited prematurely, show the error to user
-                yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
-                yield traceback.format_exc()
+                yield {"status": "error", "message": f"ERROR: Got exception when reading output from script: {type(e)}"}
+                yield {"status": "error", "message": traceback.format_exc()}
                 raise
 
-            yield from self._create_result_footer()
+            yield {"status": "completed", "message": self._create_result_footer()}
 
-        return Response(_generate_output(), mimetype='text/plain')
+        def generate_json_list(output):
+            yield '['
+            for i, dict_item in enumerate(output):
+                if i > 0:
+                    yield ','
+                yield json.dumps(dict_item)
+            yield ']'
+
+        return Response(generate_json_list(_generate_output()), content_type='application/json')
+
 
     def _run_script_and_generate_stream(self):
         """
-        Execute the command the via Popen and yield output
+        Execute the command via Popen and yield output
         """
         logger.info('Executing: %s', self._command_line.get_commandline(obfuscate=True))
         if not os.environ.get('PYTHONIOENCODING'):
@@ -88,48 +87,26 @@ class Executor:
     def _create_cmd_header(self, commands: List['CmdPart']):
         """
         Generate a command header.
-        Note:
-            here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
-            This way the JS frontend can insert it in the correct place in the DOM.
         """
-
-        def generate():
-            yield '<!-- CLICK_WEB START HEADER -->'
-            yield '<div class="command-line">Executing: {}</div>'.format('/'.join(str(c) for c in commands))
-            yield '<!-- CLICK_WEB END HEADER -->'
-
-        # important yield this block as one string so it pushed to client in one go.
-        # so the whole block can be treated as html.
-        html_str = '\n'.join(generate())
-        return html_str
+        return f"Executing: {'/'.join(str(c) for c in commands)}"
 
     def _create_result_footer(self):
         """
         Generate a footer.
-        Note:
-            here we always allow to generate HTML as long as we have it between CLICK-WEB comments.
-            This way the JS frontend can insert it in the correct place in the DOM.
         """
-        # important yield this block as one string so it pushed to client in one go.
-        # This is so the whole block can be treated as html if JS frontend.
         to_download = self._command_line.get_download_field_infos()
-        lines = ['<!-- CLICK_WEB START FOOTER -->']
+        lines = []
         if to_download:
-            lines.append('<b>Result files:</b><br>')
+            lines.append('Result files:')
             for fi in to_download:
-                lines.append('<ul> ')
-                lines.append(f'<li>{_get_download_link(fi)}<br>')
-                lines.append('</ul>')
+                lines.append(_get_download_link(fi))
 
         if self.returncode == 0:
-            lines.append('<div class="script-exit script-exit-ok">Done</div>')
+            lines.append('Done')
         else:
-            lines.append(f'<div class="script-exit script-exit-error">'
-                         f'Script exited with error code: {self.returncode}</div>')
+            lines.append(f'Script exited with error code: {self.returncode}')
 
-        lines.append('<!-- CLICK_WEB END FOOTER -->')
-        html_str = '\n'.join(lines)
-        yield html_str
+        return '\n'.join(lines)
 
 
 def _get_download_link(field_info):
@@ -198,13 +175,15 @@ class FormToCommandLineBuilder:
 
     def __init__(self, command_line: CommandLine):
         self.command_line = command_line
-        field_infos = [FieldInfo.factory(key) for key in list(request.form.keys()) + list(request.files.keys())]
+        self.request_data = request.json
+
+        field_infos = [FieldInfo.factory(key) for key in self.request_data.keys()]
         # important to sort them so they will be in expected order on command line
         self.field_infos = list(sorted(field_infos))
 
     def add_command_args(self, command_index: int):
         """
-        Convert the post request into a list of command line arguments
+        Convert the JSON payload into a list of command line arguments
 
         :param command_index: (int) the index for the command to get arguments for.
         """
@@ -227,13 +206,14 @@ class FormToCommandLineBuilder:
                     # TODO: does file upload support multiple keys? In that case support it.
                     self.command_line.append(fi.file_path)
                 else:
-                    arg_values = request.form.getlist(fi.key)
+                    arg_values = self.request_data.get(fi.key, [])
+                    if isinstance(arg_values, str):
+                        arg_values = [arg_values]
                     has_values = bool(''.join(arg_values))
                     # If arg value is empty the field was not filled, and thus optional argument
                     if has_values:
                         if fi.param.nargs == -1:
-                            # Variadic argument, in html form each argument is a separate line in a textarea.
-                            # treat each line we get from text area as a separate argument.
+                            # Variadic argument
                             for value in arg_values:
                                 values = value.splitlines()
                                 for val in values:
@@ -248,16 +228,16 @@ class FormToCommandLineBuilder:
             (cmd_option.startswith('--') or cmd_option.startswith('-'))
 
     def _process_option(self, field_info):
-        vals = request.form.getlist(field_info.key)
+        vals = self.request_data.get(field_info.key, "")
+        if isinstance(vals, str):
+            vals = [vals]
+
         if field_info.is_file:
             if field_info.link_name:
                 # it's a file, append the file path
                 self.command_line.append(field_info.cmd_opt)
                 self.command_line.append(field_info.file_path)
         elif field_info.param.param_type == 'flag':
-            # To work with flag that is default True a hidden field with same name is also sent by form.
-            # This is to detect if checkbox was not checked as then we will get the field anyway with the "off flag"
-            # as value.
             if len(vals) == 1:
                 off_flag = vals[0]
                 flag_on_cmd_line = off_flag
@@ -282,7 +262,7 @@ class FormToCommandLineBuilder:
 
 class FieldInfo:
     """
-    Extract information from the encoded form input field name
+    Extract information from the encoded JSON input field name
     the parts:
         [command_index].[opt_or_arg_index].[click_type].[html_input_type].[opt_or_arg_name]
     e.g.
@@ -345,7 +325,7 @@ class FieldFileInfo(FieldInfo):
     Use for processing input fields of file type.
     Saves the posted data to a temp file.
     """
-    'temp dir is on class in order to be uniqe for each request'
+    'temp dir is on class in order to be unique for each request'
     _temp_dir = None
 
     def __init__(self, fimeta):
@@ -394,16 +374,16 @@ class FieldFileInfo(FieldInfo):
 class FieldOutFileInfo(FieldFileInfo):
     """
     Used when file option is just for output and form posted it as hidden or text field.
-    Just create a empty temp file to give it's path to command.
+    Just create an empty temp file to give its path to the command.
     """
 
     def __init__(self, fimeta):
         super().__init__(fimeta)
         if self.param.form_type == 'text':
-            self.link_name = request.form[self.key]
+            self.link_name = self.request_data[self.key]
             # set the postfix to name provided from form
             # this way it will at least have the same extension when downloaded
-            self.file_suffix = request.form[self.key]
+            self.file_suffix = self.request_data[self.key]
         else:
             # hidden no preferred file name can be provided by user
             self.file_suffix = '.out'
@@ -420,7 +400,7 @@ class FieldPathInfo(FieldFileInfo):
     """
     Use for processing input fields of path type.
     Extracts the posted data to a temp folder.
-    When script finished zip that folder and provide download link to zip file.
+    When the script finished zip that folder and provide download link to zip file.
     """
 
     def save(self):
@@ -441,7 +421,7 @@ class FieldPathOutInfo(FieldOutFileInfo):
     """
     Use for processing output fields of path type.
     Create a folder and use as path to script.
-    When script finished zip that folder and provide download link to zip file.
+    When the script finished zip that folder and provide download link to zip file.
     """
 
     def save(self):

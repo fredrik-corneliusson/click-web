@@ -66,14 +66,25 @@ class ExecuteAndProcessOutput {
 
     post() {
         console.log("Posting to " + this.commandUrl);
+
+        // Create an object to hold the form data
+        const formData = new FormData(this.form);
+        const jsonObject = {};
+
+        // Convert the form data to a JSON object
+        formData.forEach((value, key) => {
+            jsonObject[key] = value;
+        });
+
         return fetch(this.commandUrl, {
             method: "POST",
-            body: new FormData(this.form),
-            // for fetch streaming only accept plain text, we wont handle html
-            headers: {Accept: 'text/plain'}
+            body: JSON.stringify(jsonObject), // Convert the JSON object to a string
+            headers: {
+                'Accept': 'text/plain', // for fetch streaming only accept plain text, we won't handle html
+                'Content-Type': 'application/json' // Set the content type to JSON
+            }
         });
     }
-
     async processStreamReader(reader) {
         while (true) {
             const result = await reader.read();

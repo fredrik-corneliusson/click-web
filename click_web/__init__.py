@@ -65,7 +65,7 @@ def create_click_web_app(module, command: click.BaseCommand, root='/'):
     _flask_app.add_url_rule(root + '/<path:command_path>', 'command', click_web.resources.cmd_form.get_form_for)
 
     executor = click_web.resources.cmd_exec.Executor()
-    _flask_app.add_url_rule(root + '/<path:command_path>', 'command_execute', executor.exec,
+    _flask_app.add_url_rule(root + '/<path:command_path>', 'command_execute', executor.exec_json,
                             methods=['POST'])
 
     _flask_app.logger.info(f'OUTPUT_FOLDER: {OUTPUT_FOLDER}')

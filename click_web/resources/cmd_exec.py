@@ -30,20 +30,51 @@ HTML_TAIL = '''
 
 
 class Executor:
+    RAW_CMD_PATH = "_rawcmd"
+
     def __init__(self):
         self.returncode = None
         self._command_line = None
 
     def exec(self, command_path):
+        global logger
+        logger = click_web.logger
+        if command_path == self.RAW_CMD_PATH:
+            command = request.data.decode('utf-8')
+            return self._exec_raw(command)
+        else:
+            return self._exec(command_path)
+
+    def _exec_raw(self, command):
+        """
+        This is for providing an API that is easy to call from scripts etc.
+        Execute the command as provided in the post data and stream the text output from it as response
+        Note: This does not support posting of files and or generating output links to files.
+              Also, it does not obfuscate secrets in the logs at the moment.
+        :param command: the command line after the root command.
+                        For example:
+                         print-lines 5 --delay 1 --message Red
+        """
+        self._command_line = CommandLineRaw(click_web.script_file, command)
+
+        def generate():
+            try:
+                yield from self._run_script_and_generate_stream()
+            except Exception as e:
+                # exited prematurely, show the error to user
+                yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
+                yield traceback.format_exc()
+                raise
+
+        return Response(generate(), content_type='text/plain; charset=utf-8')
+
+    def _exec(self, command_path):
         """
         Execute the command and stream the output from it as response
         :param command_path:
         """
-        global logger
-        logger = click_web.logger
-
         root_command, *commands = command_path.split('/')
-        self._command_line = CommandLine(click_web.script_file, commands)
+        self._command_line = CommandLineForm(click_web.script_file, commands)
 
         def _generate_output():
             yield self._create_cmd_header(commands)
@@ -140,7 +171,30 @@ def _get_download_link(field_info):
     return f'<a href="{uri}">{field_info.link_name}</a>'
 
 
-class CommandLine:
+class CommandLineRaw:
+    def __init__(self, script_file_path: str, command):
+        self._parts = []
+        self.append(_get_python_interpreter())
+        self.append(script_file_path)
+        self.append(command)
+
+    def append(self, part: str, secret: bool = False):
+        self._parts.append(part)
+
+    def get_commandline(self, obfuscate: bool = False) -> str:
+        """
+        Return command line as string.
+        """
+        return " ".join(self._parts)
+
+    def get_download_field_infos(self):
+        return []
+
+    def after_script_executed(self):
+        pass
+
+
+class CommandLineForm:
     def __init__(self, script_file_path: str, commands: List[str]):
         self._parts: List[CmdPart] = list()
         self.append(_get_python_interpreter())
@@ -196,7 +250,7 @@ class CmdPart:
 
 class FormToCommandLineBuilder:
 
-    def __init__(self, command_line: CommandLine):
+    def __init__(self, command_line: CommandLineForm):
         self.command_line = command_line
         field_infos = [FieldInfo.factory(key) for key in list(request.form.keys()) + list(request.files.keys())]
         # important to sort them so they will be in expected order on command line

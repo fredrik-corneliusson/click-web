@@ -1,6 +1,8 @@
 import pytest
 from werkzeug.datastructures import MultiDict
 
+from click_web.resources.cmd_exec import Executor
+
 
 def test_exec_command(app, client):
     resp = client.post('/cli/simple-no-params-command')
@@ -113,4 +115,26 @@ def test_exec_with_variadic_args(form_data, expected_msg, app, client):
                        data=form_data)
     assert resp.status_code == 200
     print(resp.data)
+    assert expected_msg in resp.data
+
+
+@pytest.mark.parametrize(
+    'data, expected_msg',
+    [
+        ('command-with-option-and-argument',
+         b'Ran command with option: option_value argument 10'),
+
+        ("command-with-option-and-argument 11",
+         b'Ran command with option: option_value argument 11'),
+
+        ("--debug command-with-option-and-argument --an-option ABC 12",
+         b'Ran command with option: ABC argument 12')
+    ])
+def test_rawcmd_exec_with_arg_and_default_opt(data, expected_msg, app, client):
+    """
+    Test of the giving raw command line.
+    """
+    resp = client.post('/' + Executor.RAW_CMD_PATH, data=data)
+    assert resp.status_code == 200
+    assert resp.content_type == 'text/plain; charset=utf-8'
     assert expected_msg in resp.data

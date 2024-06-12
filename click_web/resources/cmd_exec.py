@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -176,16 +177,18 @@ class CommandLineRaw:
         self._parts = []
         self.append(_get_python_interpreter())
         self.append(script_file_path)
-        self.append(command)
+        for arg in shlex.split(command):
+            self.append(arg)
 
     def append(self, part: str, secret: bool = False):
         self._parts.append(part)
 
-    def get_commandline(self, obfuscate: bool = False) -> str:
+    def get_commandline(self, obfuscate: bool = False) -> List[str]:
         """
-        Return command line as string.
+        Return command line as a list of strings.
+        obfuscate - not supported for this implementation
         """
-        return " ".join(self._parts)
+        return self._parts
 
     def get_download_field_infos(self):
         return []

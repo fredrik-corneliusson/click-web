@@ -3,7 +3,7 @@ from collections import OrderedDict
 import flask
 import pytest
 
-from click_web.resources.cmd_exec import CommandLine
+from click_web.resources.cmd_exec import CommandLineForm
 
 app = flask.Flask(__name__)
 
@@ -30,5 +30,5 @@ app = flask.Flask(__name__)
     ])
 def test_form_post_to_commandline_arguments(data, expected):
     with app.test_request_context('/command', data=data):
-        command_line = CommandLine('/some/script.py', commands=["command2"])
+        command_line = CommandLineForm('/some/script.py', commands=["command2"])
         assert command_line.get_commandline()[2:] == expected

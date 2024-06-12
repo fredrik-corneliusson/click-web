@@ -8,8 +8,8 @@ with open('README.rst') as f:
 
 requirements = [
     'click>=8.0',
-    'Flask>=1.1',
-    'Jinja2>=2.11',
+    'Flask>=2.3.2',
+    'Jinja2>=3.1.3',
     'flask_httpauth>=3.2.4'
 ]
 
@@ -25,7 +25,7 @@ dev_requirements = [
 
 setup(
     name='click-web',
-    version='0.8.3',
+    version='0.8.4',
     url='https://github.com/fredrik-corneliusson/click-web',
     author='Fredrik Corneliusson',
     author_email='fredrik.corneliusson@gmail.com',
@@ -35,7 +35,7 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     zip_safe=False,
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=requirements,
     dependency_links=[],
     extras_require={
@@ -52,7 +52,9 @@ setup(
         'Topic :: Utilities',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ]
 )

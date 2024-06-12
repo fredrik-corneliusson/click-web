@@ -17,6 +17,8 @@ Running tests and code linting::
 Creating a release
 ==================
 
+**NOTE: this release instruction is deprecated, click-web now uses github to make releases.**
+
 * Checkout the ``master`` branch.
 * Pull the latest changes from ``origin``.
 * Increment the version number (in setup.py).

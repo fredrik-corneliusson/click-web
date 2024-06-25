@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from werkzeug.datastructures import MultiDict
 
@@ -138,3 +140,5 @@ def test_rawcmd_exec_with_arg_and_default_opt(data, expected_msg, app, client):
     assert resp.status_code == 200
     assert resp.content_type == 'text/plain; charset=utf-8'
     assert expected_msg in resp.data
+    last_line = resp.data.splitlines()[-1]
+    assert json.loads(last_line) == {"result": "OK", "returncode": 0, "message": "Done"}

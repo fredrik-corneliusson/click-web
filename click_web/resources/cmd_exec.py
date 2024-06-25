@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shlex
@@ -44,7 +45,7 @@ class Executor:
             command = request.data.decode('utf-8')
             return self._exec_raw(command)
         else:
-            return self._exec(command_path)
+            return self._exec_html(command_path)
 
     def _exec_raw(self, command):
         """
@@ -52,6 +53,8 @@ class Executor:
         Execute the command as provided in the post data and stream the text output from it as response
         Note: This does not support posting of files and or generating output links to files.
               Also, it does not obfuscate secrets in the logs at the moment.
+        Last returned line is a json object with status and return code (exit code) of the command executed.
+
         :param command: the command line after the root command.
                         For example:
                          print-lines 5 --delay 1 --message Red
@@ -66,10 +69,17 @@ class Executor:
                 yield f"\nERROR: Got exception when reading output from script: {type(e)}\n"
                 yield traceback.format_exc()
                 raise
+            finally:
+                if self.returncode == 0:
+                    yield json.dumps({"result": "OK", "returncode": self.returncode,
+                                      "message": "Done"})
+                else:
+                    yield json.dumps({"result": "ERROR", "returncode": self.returncode,
+                                      "message": f'Script exited with error code: {self.returncode}'})
 
         return Response(generate(), content_type='text/plain; charset=utf-8')
 
-    def _exec(self, command_path):
+    def _exec_html(self, command_path):
         """
         Execute the command and stream the output from it as response
         :param command_path:

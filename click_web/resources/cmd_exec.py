@@ -10,7 +10,7 @@ import traceback
 from pathlib import Path
 from typing import List, Union
 
-from flask import Response, request
+from flask import Response, current_app, request, stream_with_context
 from werkzeug.utils import secure_filename
 
 import click_web
@@ -34,7 +34,8 @@ HTML_TAIL = '''
 class Executor:
     RAW_CMD_PATH = "_rawcmd"
 
-    def __init__(self):
+    def __init__(self, flask_app):
+        self._flask_app = flask_app
         self.returncode = None
         self._command_line = None
 
@@ -59,9 +60,9 @@ class Executor:
                         For example:
                          print-lines 5 --delay 1 --message Red
         """
-        self._command_line = CommandLineRaw(click_web.script_file, command)
+        self._command_line = CommandLineRaw(current_app.config['CLICK_WEB_SCRIPT_FILE'], command)
 
-        def generate():
+        def _generate_output():
             try:
                 yield from self._run_script_and_generate_stream()
             except Exception as e:
@@ -76,8 +77,10 @@ class Executor:
                 else:
                     yield json.dumps({"result": "ERROR", "returncode": self.returncode,
                                       "message": f'Script exited with error code: {self.returncode}'})
-
-        return Response(generate(), content_type='text/plain; charset=utf-8')
+        return Response(
+            # stream_with_context needed to make falsk request context available in generator.
+            stream_with_context(_generate_output()),
+            content_type='text/plain; charset=utf-8')
 
     def _exec_html(self, command_path):
         """
@@ -85,7 +88,8 @@ class Executor:
         :param command_path:
         """
         root_command, *commands = command_path.split('/')
-        self._command_line = CommandLineForm(click_web.script_file, commands)
+
+        self._command_line = CommandLineForm(current_app.config['CLICK_WEB_SCRIPT_FILE'], commands)
 
         def _generate_output():
             yield self._create_cmd_header(commands)
@@ -99,7 +103,10 @@ class Executor:
 
             yield from self._create_result_footer()
 
-        return Response(_generate_output(), mimetype='text/plain')
+        return Response(
+            # stream_with_context needed to make falsk request context available in generator.
+            stream_with_context(_generate_output()),
+            mimetype='text/plain')
 
     def _run_script_and_generate_stream(self):
         """
@@ -107,7 +114,7 @@ class Executor:
         """
         logger.info('Executing: %s', self._command_line.get_commandline(obfuscate=True))
         if not os.environ.get('PYTHONIOENCODING'):
-            # Fix unicode on windows
+            # Fix Unicode on windows
             os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
         process = subprocess.Popen(self._command_line.get_commandline(),
@@ -160,7 +167,7 @@ class Executor:
             lines.append('<b>Result files:</b><br>')
             for fi in to_download:
                 lines.append('<ul> ')
-                lines.append(f'<li>{_get_download_link(fi)}<br>')
+                lines.append(f'<li>{_get_download_link(self._flask_app, fi)}<br>')
                 lines.append('</ul>')
 
         if self.returncode == 0:
@@ -174,11 +181,9 @@ class Executor:
         yield html_str
 
 
-def _get_download_link(field_info):
-    """Hack as url_for need request context"""
-
-    rel_file_path = Path(field_info.file_path).relative_to(click_web.OUTPUT_FOLDER)
-    uri = f'/static/results/{rel_file_path.as_posix()}'
+def _get_download_link(flask_app, field_info):
+    rel_file_path = Path(field_info.file_path).relative_to(flask_app.config['OUTPUT_FOLDER'])
+    uri = request.script_root + f'/static/results/{rel_file_path.as_posix()}'
     return f'<a href="{uri}">{field_info.link_name}</a>'
 
 
@@ -431,7 +436,7 @@ class FieldFileInfo(FieldInfo):
     @classmethod
     def temp_dir(cls):
         if not cls._temp_dir:
-            cls._temp_dir = tempfile.mkdtemp(dir=click_web.OUTPUT_FOLDER)
+            cls._temp_dir = tempfile.mkdtemp(dir=current_app.config['OUTPUT_FOLDER'])
         logger.info(f'Temp dir: {cls._temp_dir}')
         return cls._temp_dir
 

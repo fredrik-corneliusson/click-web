@@ -2,9 +2,8 @@ from html import escape
 from typing import List, Tuple
 
 import click
-from flask import abort, render_template
+from flask import abort, current_app, render_template
 
-import click_web
 from click_web.exceptions import CommandNotFound
 from click_web.resources.input_fields import get_input_field
 
@@ -30,7 +29,8 @@ def _get_commands_by_path(command_path: str) -> List[Tuple[click.Context, click.
     """
     command_path_items = command_path.split('/')
     command_name, *command_path_items = command_path_items
-    command = click_web.click_root_cmd
+    command = current_app.config['CLICK_WEB_ROOT_CMD']
+
     if command.name != command_name:
         raise CommandNotFound('Failed to find root command {}. There is a root command named:{}'
                               .format(command_name, command.name))

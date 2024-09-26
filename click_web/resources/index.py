@@ -2,14 +2,16 @@ from collections import OrderedDict
 from typing import Union
 
 import click
-from flask import render_template
-
-import click_web
+from flask import current_app, render_template, request
 
 
 def index():
-    with click.Context(click_web.click_root_cmd, info_name=click_web.click_root_cmd.name, parent=None) as ctx:
-        return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
+    click_root_cmd = current_app.config['CLICK_WEB_ROOT_CMD']
+    with click.Context(click_root_cmd, info_name=click_root_cmd.name, parent=None) as ctx:
+        return render_template(
+            'show_tree.html.j2',
+            ctx=ctx,
+            tree=_click_to_tree(ctx, click_root_cmd))
 
 
 def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors: list = None):
@@ -36,8 +38,7 @@ def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCom
     res['short_help'] = node.get_short_help_str().split('\b')[0]
     res['help'] = node.help
     path_parts = ancestors + [node]
-    root = click_web._flask_app.config['APPLICATION_ROOT'].rstrip('/')
-    res['path'] = root + '/' + '/'.join(p.name for p in path_parts)
+    res['path'] = request.script_root + '/' + '/'.join(p.name for p in path_parts)
     if res_childs:
         res['childs'] = res_childs
     return res

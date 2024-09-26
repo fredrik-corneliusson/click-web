@@ -3,6 +3,7 @@ from pathlib import Path
 
 import click
 import pytest
+from flask import Flask
 
 import click_web
 import click_web.resources.cmd_form
@@ -12,17 +13,20 @@ from tests.fixtures.script.a_script import ACustomParamType
 
 
 def test_register(cli, loaded_script_module):
-    click_web._register(loaded_script_module, cli)
-
-    assert click_web.script_file == str(Path(loaded_script_module.__file__).absolute())
-    assert click_web.click_root_cmd == cli
+    app = Flask("My testapp", static_url_path='/static')
+    click_web._register(app, loaded_script_module, cli)
+    assert app.config['CLICK_WEB_SCRIPT_FILE'] == str(Path(loaded_script_module.__file__).absolute())
+    assert app.config['CLICK_WEB_ROOT_CMD'] == cli
 
 
 def test_render_command_form(cli, loaded_script_module):
+    app = Flask("My testapp", static_url_path='/static')
     cmd_path = 'cli/command-with-option-and-argument'
-    click_web._register(loaded_script_module, cli)
-    ctx_and_commands = click_web.resources.cmd_form._get_commands_by_path(cmd_path)
-    res = _generate_form_data(ctx_and_commands)
+    click_web._register(app, loaded_script_module, cli)
+
+    with app.app_context():
+        ctx_and_commands = click_web.resources.cmd_form._get_commands_by_path(cmd_path)
+        res = _generate_form_data(ctx_and_commands)
     assert len(res) == 2
     assert len(res[0]['fields']) == 1
     assert len(res[1]['fields']) == 2
@@ -41,8 +45,10 @@ def test_command_path(cli,
                       command_path,
                       command_name,
                       command_help):
-    click_web._register(loaded_script_module, cli)
-    ctx, command = click_web.resources.cmd_form._get_commands_by_path(command_path)[-1]
+    app = Flask("My testapp", static_url_path='/static')
+    click_web._register(app, loaded_script_module, cli)
+    with app.app_context():
+        ctx, command = click_web.resources.cmd_form._get_commands_by_path(command_path)[-1]
 
     assert command.name == command_name
     assert command.help == command_help

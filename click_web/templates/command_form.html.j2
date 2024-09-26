@@ -2,11 +2,10 @@
 <div class="command-title-parents">{{ levels[1:-1]| join(' - ', attribute='command.name')|title }}</div>
 <h1 class="command-title">{{ command.name|title }}</h1>
 <div class="command-help">{{ command.html_help }}</div>
-
 <form id="inputform"
       method="post"
-      action="{{ request.path }}"
-      onsubmit="return postAndRead('{{ request.path }}');"
+      action="{{ request.script_root }}{{ request.path }}"
+      onsubmit="return postAndRead('{{ request.script_root }}{{ request.path }}');"
       class="pure-form pure-form-aligned"
       enctype="multipart/form-data">
     {% set command_list = [] %}

@@ -1,3 +1,4 @@
+import os
 import pprint
 from pathlib import Path
 
@@ -249,4 +250,47 @@ def test_get_custom_input_field_type(ctx, cli, param, expected, command_index):
 
     res = click_web.resources.input_fields.get_input_field(ctx, param, command_index, 0)
     pprint.pprint(res)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    'param, envvar, expected',
+    [
+        (click.Argument(["unset", ], envvar="TEST_VAR"), {},
+         {'checked': '',
+          'click_type': 'text',
+          'help': '',
+          'human_readable_name': 'UNSET',
+          'name': '0.0.argument.text.1.text.unset',
+          'nargs': 1,
+          'param': 'argument',
+          'required': True,
+          'type': 'text',
+          'value': None}),
+        (click.Argument(["env-set", ], envvar="TEST_VAR"), {"TEST_VAR": "test-value"},
+         {'checked': '',
+          'click_type': 'text',
+          'help': '',
+          'human_readable_name': 'ENV SET',
+          'name': '0.0.argument.text.1.text.env-set',
+          'nargs': 1,
+          'param': 'argument',
+          'required': True,
+          'type': 'text',
+          'value': "test-value"}),
+        (click.Argument(["env-set", ], envvar=["UNUSED_ENVVAR", "TEST_VAR"]), {"TEST_VAR": "test-value"},
+         {'checked': '',
+          'click_type': 'text',
+          'help': '',
+          'human_readable_name': 'ENV SET',
+          'name': '0.0.argument.text.1.text.env-set',
+          'nargs': 1,
+          'param': 'argument',
+          'required': True,
+          'type': 'text',
+          'value': "test-value"}),
+    ])
+def test_parse_envvar_for_input_field_values(ctx, cli, param, envvar, expected):
+    os.environ.update(envvar)
+    res = click_web.resources.input_fields.get_input_field(ctx, param, 0, 0)
     assert res == expected

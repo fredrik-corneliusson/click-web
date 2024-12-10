@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Util command to run tests and code lint.
 
-pytest && isort . && flake8
+pytest && isort click_web tests && flake8 click_web tests
 retVal=$?
 if [ $retVal -eq 0 ]; then
     echo "All checks OK!"
